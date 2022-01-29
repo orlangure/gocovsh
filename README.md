@@ -31,3 +31,6 @@ More installation options will follow.
 3. Use `j/k/enter/esc` keys to explore the report. See built-in help for more
    key-bindings.
 
+<img width="900" alt="image" src="https://user-images.githubusercontent.com/10244414/151678881-74b52fe5-0dea-4411-aa65-2343d71b8516.png">
+<img width="900" alt="image" src="https://user-images.githubusercontent.com/10244414/151678915-e323a185-679f-48ff-9582-63c48edd09c0.png">
+
