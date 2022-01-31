@@ -5,7 +5,7 @@
 ## Installation
 
 ```
-$ go install github.com/orlangure/gocovsh
+$ go install github.com/orlangure/gocovsh@latest
 ```
 
 More installation options will follow.
