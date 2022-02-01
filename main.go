@@ -13,6 +13,13 @@ const (
 )
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	var profileFilename string
 
 	flag.StringVar(
@@ -23,11 +30,22 @@ func main() {
 
 	m := model{
 		activeView:      activeViewList,
+		helpState:       helpStateShort,
 		profileFilename: profileFilename,
 	}
 
-	if err := tea.NewProgram(m, tea.WithAltScreen()).Start(); err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
+	if os.Getenv("DEBUG") != "" {
+		f, err := tea.LogToFile("bubbletea.log", "gocovsh")
+		if err != nil {
+			return fmt.Errorf("failed to setup logger: %w", err)
+		}
+
+		defer func() { _ = f.Close() }()
 	}
+
+	if err := tea.NewProgram(m, tea.WithAltScreen()).Start(); err != nil {
+		return fmt.Errorf("failed to start program: %w", err)
+	}
+
+	return nil
 }

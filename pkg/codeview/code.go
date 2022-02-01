@@ -54,6 +54,7 @@ func New(width, height int) Model {
 	return Model{
 		viewport: viewport.New(width, height),
 		help:     help.New(),
+		showHelp: true,
 	}
 }
 
@@ -65,6 +66,7 @@ type Model struct {
 	height   int
 	title    string
 	lines    []string
+	showHelp bool
 }
 
 // Update is used to update the internal model state based on the external
@@ -93,21 +95,30 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m *Model) View() string {
 	headerView := m.headerView()
 	footerView := m.footerView()
-	// TODO: allow hiding help
-	helpView := helpStyle.Render(m.help.View(m))
+	helpView := m.helpView()
 	codeView := m.viewport.View()
 
-	return fmt.Sprintf("%s\n%s\n%s\n%s", headerView, codeView, footerView, helpView)
+	sections := make([]string, 0, 4)
+	sections = append(sections, headerView, codeView, footerView)
+
+	if helpView != "" {
+		sections = append(sections, helpView)
+	}
+
+	return strings.Join(sections, "\n")
 }
 
 // SetContent sets the content of the codeview.
 func (m *Model) SetContent(lines []string) {
 	// save the original lines to not lose content in case of window resizing
 	m.lines = lines
-
-	content := m.formatLines(lines)
-	m.viewport.SetContent(content)
+	m.redrawLines()
 	m.viewport.SetYOffset(0)
+}
+
+func (m *Model) redrawLines() {
+	content := m.formatLines(m.lines)
+	m.viewport.SetContent(content)
 }
 
 // SetWidth sets the width of the codeview.
@@ -138,8 +149,10 @@ func (m *Model) SetTitle(title string) {
 // ShortHelp implements  help.KeyMap interface.
 func (m *Model) ShortHelp() []key.Binding {
 	return []key.Binding{
-		DefaultKeyMap.Up, DefaultKeyMap.Down,
-		DefaultKeyMap.Home, DefaultKeyMap.End,
+		DefaultKeyMap.Up,
+		DefaultKeyMap.Down,
+		DefaultKeyMap.Home,
+		DefaultKeyMap.End,
 		DefaultKeyMap.Back,
 	}
 }
@@ -147,17 +160,38 @@ func (m *Model) ShortHelp() []key.Binding {
 // FullHelp implements  help.KeyMap interface.
 func (m *Model) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		m.ShortHelp(),
+		{DefaultKeyMap.Up, DefaultKeyMap.Down, DefaultKeyMap.Home, DefaultKeyMap.End},
+		{DefaultKeyMap.HalfScreenDown, DefaultKeyMap.HalfScreenUp},
+		{DefaultKeyMap.Back, DefaultKeyMap.Quit},
 	}
+}
+
+// SetShowHelp allows to hide or show the help section.
+func (m *Model) SetShowHelp(showHelp bool) {
+	m.showHelp = showHelp
+	m.setSize(m.width, m.height)
+}
+
+// SetShowFullHelp allows to view extended help section, if visible.
+func (m *Model) SetShowFullHelp(showFullHelp bool) {
+	m.help.ShowAll = showFullHelp
+	m.setSize(m.width, m.height)
 }
 
 func (m *Model) setSize(width, height int) {
 	m.height = height
 	m.width = width
+	m.help.Width = width // this is required for full help
+	m.recalculateSize()
+	m.redrawLines()
+}
 
+func (m *Model) recalculateSize() {
 	headerView := m.headerView()
 	footerView := m.footerView()
-	helpView := helpStyle.Render(m.help.View(m))
+	helpView := m.helpView()
+
+	height := m.height
 
 	height -= lipgloss.Height(helpView)
 	height -= lipgloss.Height(headerView)
@@ -165,11 +199,6 @@ func (m *Model) setSize(width, height int) {
 
 	// if viewport size changes, the text should be reformatted
 	m.viewport.Height = max(height, 1)
-	m.SetContent(m.lines)
-}
-
-func (m *Model) replaceTabsWithSpaces(line string) string {
-	return strings.ReplaceAll(line, "\t", "    ")
 }
 
 func (m *Model) formatLines(lines []string) string {
@@ -194,6 +223,10 @@ func (m *Model) formatLines(lines []string) string {
 	return buf.String()
 }
 
+func (m *Model) replaceTabsWithSpaces(line string) string {
+	return strings.ReplaceAll(line, "\t", "    ")
+}
+
 func (m *Model) headerView() string {
 	truncatedTitle := m.title
 
@@ -212,6 +245,14 @@ func (m *Model) footerView() string {
 	line := strings.Repeat("─", max(0, m.width-lipgloss.Width(info)))
 
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
+}
+
+func (m *Model) helpView() (res string) {
+	if m.showHelp {
+		return helpStyle.Render(m.help.View(m))
+	}
+
+	return ""
 }
 
 func max(a, b int) int {
