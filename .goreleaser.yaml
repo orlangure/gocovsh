@@ -1,0 +1,48 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  use: github
+brews:
+  - tap:
+      owner: orlangure
+      name: homebrew-tap
+      token: "{{ .Env.BREW_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: https://github.com/orlangure/gocovsh
+    description: 'Go Coverage in your terminal: a tool for exploring Go Coverage reports from the command line'
+nfpms:
+  - homepage: https://github.com/orlangure/gocovsh
+    description: 'Go Coverage in your terminal: a tool for exploring Go Coverage reports from the command line'
+    maintainer: Yury Fedorov
+    license: GPL-3.0-only
+    vendor: Yury Fedorov
+    formats:
+    - apk
+    - deb
+    - rpm
+signs:
+  - cmd: cosign
+    env:
+    - COSIGN_EXPERIMENTAL=1
+    certificate: '${artifact}.pem'
+    output: true
+    artifacts: checksum
+    args:
+    - sign-blob
+    - '--output-certificate=${certificate}'
+    - '--output-signature=${signature}'
+    - '${artifact}'
