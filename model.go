@@ -34,9 +34,15 @@ const (
 	activeViewCode viewName = "code"
 )
 
-type model struct {
-	activeView viewName
+type helpState int
 
+const (
+	helpStateHidden helpState = iota
+	helpStateShort
+	helpStateFull
+)
+
+type model struct {
 	list  list.Model
 	items []list.Item
 
@@ -45,8 +51,10 @@ type model struct {
 	profileFilename     string
 	detectedPackageName string
 
-	err   error
-	ready bool
+	activeView viewName
+	helpState  helpState
+	ready      bool
+	err        error
 }
 
 func (m model) Init() tea.Cmd {
@@ -159,9 +167,7 @@ func (m *model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 		m.items[i] = &coverProfile{profile: p}
 	}
 
-	m.list.SetItems(m.items)
-
-	return m, nil
+	return m, m.list.SetItems(m.items)
 }
 
 func (m *model) onFileContentLoaded(content []string) (tea.Model, tea.Cmd) {
@@ -208,9 +214,43 @@ func (m *model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 		}
 
 		return m, nil
+
+	case "?":
+		m.toggleHelp()
+		return m, nil
 	}
 
 	return nil, nil
+}
+
+func (m *model) toggleHelp() {
+	// manage help state globally: allow to extend or hide completely
+	switch m.helpState {
+	case helpStateHidden:
+		m.helpState = helpStateShort
+
+		m.list.Help.ShowAll = false
+		m.list.SetShowHelp(true)
+
+		m.code.SetShowFullHelp(false)
+		m.code.SetShowHelp(true)
+	case helpStateShort:
+		m.helpState = helpStateFull
+
+		m.list.Help.ShowAll = true
+		m.list.SetShowHelp(true)
+
+		m.code.SetShowFullHelp(true)
+		m.code.SetShowHelp(true)
+	case helpStateFull:
+		m.helpState = helpStateHidden
+
+		m.list.Help.ShowAll = false
+		m.list.SetShowHelp(false)
+
+		m.code.SetShowFullHelp(false)
+		m.code.SetShowHelp(false)
+	}
 }
 
 func loadProfiles(profileFilename string) tea.Cmd {

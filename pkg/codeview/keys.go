@@ -4,12 +4,14 @@ import "github.com/charmbracelet/bubbles/key"
 
 // KeyMap includes codeview key mappings.
 type KeyMap struct {
-	Up   key.Binding
-	Down key.Binding
-	Home key.Binding
-	End  key.Binding
-	Back key.Binding
-	Quit key.Binding
+	Up             key.Binding
+	Down           key.Binding
+	Home           key.Binding
+	End            key.Binding
+	Back           key.Binding
+	Quit           key.Binding
+	HalfScreenDown key.Binding
+	HalfScreenUp   key.Binding
 }
 
 // DefaultKeyMap is the default KeyMap used by codeview package.
@@ -37,5 +39,13 @@ var DefaultKeyMap = KeyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "ctrl+c"),
 		key.WithHelp("q", "quit"),
+	),
+	HalfScreenDown: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "half screen down"),
+	),
+	HalfScreenUp: key.NewBinding(
+		key.WithKeys("u"),
+		key.WithHelp("u", "half screen down"),
 	),
 }

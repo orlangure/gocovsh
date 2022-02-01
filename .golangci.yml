@@ -1,7 +1,6 @@
 linters:
   enable:
     - bodyclose
-    # - cyclop
     - deadcode
     - depguard
     - dogsled
@@ -13,9 +12,7 @@ linters:
     - gocognit
     - goconst
     - gocritic
-    # - gocyclo
     - godot
-    # - godox
     - gofmt
     - gofumpt
     - goimports
