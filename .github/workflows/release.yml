@@ -38,3 +38,4 @@ jobs:
           args: release --rm-dist
         env:
           BREW_GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
