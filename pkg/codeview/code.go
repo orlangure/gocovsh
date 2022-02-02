@@ -95,13 +95,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m *Model) View() string {
 	headerView := m.headerView()
 	footerView := m.footerView()
-	helpView := m.helpView()
 	codeView := m.viewport.View()
 
 	sections := make([]string, 0, 4)
 	sections = append(sections, headerView, codeView, footerView)
 
-	if helpView != "" {
+	if helpView := m.helpView(); helpView != "" {
 		sections = append(sections, helpView)
 	}
 
