@@ -1,0 +1,27 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  test:
+    desc: Execute gocovsh tests
+    cmds:
+      - go test -v -race -coverprofile coverage.out -coverpkg ./... ./...
+
+  update-testdata:
+    desc: Update testdata, such as dummy coverage report or golden files
+    cmds:
+      - task: generate-general-coverage
+      - task: update-golden-files
+
+  generate-general-coverage:
+    desc: Update dummy project coverage report
+    dir: ./internal/gocovshtest/testdata/general
+    cmds:
+      - go test -coverprofile coverage.out .
+
+  update-golden-files:
+    desc: Generate golden files
+    dir: ./internal/gocovshtest
+    cmds:
+      - go test -update ./...
