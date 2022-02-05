@@ -1,0 +1,7 @@
+mode: set
+github.com/orlangure/gocovsh/internal/model/testdata/general/partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go:3.23,5.2 1 1
+github.com/orlangure/gocovsh/internal/model/testdata/general/partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go:7.26,9.2 1 0
+github.com/orlangure/gocovsh/internal/model/testdata/general/partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go:11.29,12.14 1 1
+github.com/orlangure/gocovsh/internal/model/testdata/general/partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go:16.2,16.18 1 1
+github.com/orlangure/gocovsh/internal/model/testdata/general/partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go:13.10,13.10 0 1
+github.com/orlangure/gocovsh/internal/model/testdata/general/covered.go:3.20,5.2 1 1

@@ -1,16 +1,19 @@
-package main
+// Package model implements tea.Model. The model created by it can be used
+// directly in the tea framework.
+package model
 
 import (
 	"bufio"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/orlangure/gocovsh/pkg/codeview"
+	"github.com/orlangure/gocovsh/internal/codeview"
 	"golang.org/x/tools/cover"
 )
 
@@ -22,6 +25,8 @@ const (
 )
 
 var (
+	modulePattern = regexp.MustCompile(`module\s+(.+)`)
+
 	neutralLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(inactiveColor))
 	coveredLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(primaryColor))
 	uncoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
@@ -42,12 +47,29 @@ const (
 	helpStateFull
 )
 
-type model struct {
+// New create a new model that can be used directly in the tea framework.
+func New(opts ...Option) *Model {
+	m := &Model{
+		activeView: activeViewList,
+		helpState:  helpStateShort,
+		codeRoot:   ".",
+	}
+
+	for _, opt := range opts {
+		opt(m)
+	}
+
+	return m
+}
+
+// Model implements tea.Model.
+type Model struct {
 	list  list.Model
 	items []list.Item
 
 	code codeview.Model
 
+	codeRoot            string
 	profileFilename     string
 	detectedPackageName string
 
@@ -57,17 +79,16 @@ type model struct {
 	err        error
 }
 
-func (m model) Init() tea.Cmd {
-	return loadProfiles(m.profileFilename)
+// Init implements tea.Model.
+func (m *Model) Init() tea.Cmd {
+	return loadProfiles(m.codeRoot, m.profileFilename)
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+// Update implements tea.Model.
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		return m.updateWindowSize(msg.Width, msg.Height)
-
-	case error:
-		return m.onError(msg)
 
 	case []*cover.Profile:
 		return m.onProfilesLoaded(msg)
@@ -79,6 +100,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m, cmd := m.onKeyPressed(msg.String()); m != nil {
 			return m, cmd
 		}
+
+	case error:
+		return m.onError(msg)
 	}
 
 	var cmd tea.Cmd
@@ -93,7 +117,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+// View implements tea.Model.
+func (m *Model) View() string {
 	if m.err != nil {
 		// TODO: add error style
 		return fmt.Sprintf("Error: %s\nPress any key to exit\n", m.err)
@@ -114,20 +139,20 @@ func (m model) View() string {
 	return "Unknown view"
 }
 
-func (m model) isCodeView() bool {
+func (m *Model) isCodeView() bool {
 	return m.activeView == activeViewCode
 }
 
-func (m model) isListView() bool {
+func (m *Model) isListView() bool {
 	return m.activeView == activeViewList
 }
 
-func (m *model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
+func (m *Model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
 	if !m.ready {
 		m.code = codeview.New(width, height)
 
 		m.list = list.New([]list.Item{}, coverProfileDelegate{}, width, height-1)
-		m.list.Title = "Code coverage is available for the following files:"
+		m.list.Title = "Available files:"
 		m.list.SetShowStatusBar(true)
 		m.list.SetFilteringEnabled(true)
 		m.list.Styles.Title = titleStyle
@@ -145,15 +170,15 @@ func (m *model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
 	m.list.SetWidth(width)
 	m.list.SetHeight(height - 1)
 
-	return *m, nil
+	return m, nil
 }
 
-func (m *model) onError(err error) (tea.Model, tea.Cmd) {
+func (m *Model) onError(err error) (tea.Model, tea.Cmd) {
 	m.err = err
 	return m, nil
 }
 
-func (m *model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd) {
+func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd) {
 	if len(profiles) == 0 {
 		m.err = fmt.Errorf("no profiles found; you may need to run `go test -coverprofile=coverage.out`")
 		return m, nil
@@ -170,14 +195,14 @@ func (m *model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 	return m, m.list.SetItems(m.items)
 }
 
-func (m *model) onFileContentLoaded(content []string) (tea.Model, tea.Cmd) {
+func (m *Model) onFileContentLoaded(content []string) (tea.Model, tea.Cmd) {
 	m.code.SetContent(content)
 	m.activeView = activeViewCode
 
 	return m, nil
 }
 
-func (m *model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
+func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 	// exit on any key in case of error
 	if m.err != nil {
 		return m, tea.Quit
@@ -210,7 +235,9 @@ func (m *model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 		if ok {
 			m.code.SetTitle(item.profile.FileName)
 
-			return m, loadFile(item.profile.FileName, item.profile)
+			adjustedFileName := path.Join(m.codeRoot, item.profile.FileName)
+
+			return m, loadFile(adjustedFileName, item.profile)
 		}
 
 		return m, nil
@@ -223,7 +250,7 @@ func (m *model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 	return nil, nil
 }
 
-func (m *model) toggleHelp() {
+func (m *Model) toggleHelp() {
 	// manage help state globally: allow to extend or hide completely
 	switch m.helpState {
 	case helpStateHidden:
@@ -253,14 +280,17 @@ func (m *model) toggleHelp() {
 	}
 }
 
-func loadProfiles(profileFilename string) tea.Cmd {
+func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 	return func() tea.Msg {
-		pkg, err := determinePackageName()
+		gomodFile := path.Join(codeRoot, "go.mod")
+		profilesFile := path.Join(codeRoot, profileFilename)
+
+		pkg, err := determinePackageName(gomodFile)
 		if err != nil {
 			return fmt.Errorf("failed to determine package name: %w", err)
 		}
 
-		profiles, err := cover.ParseProfiles(profileFilename)
+		profiles, err := cover.ParseProfiles(profilesFile)
 		if err != nil {
 			return fmt.Errorf("failed to parse cover profiles: %w", err)
 		}
@@ -274,14 +304,13 @@ func loadProfiles(profileFilename string) tea.Cmd {
 	}
 }
 
-func determinePackageName() (string, error) {
-	bs, err := os.ReadFile("go.mod")
+func determinePackageName(gomodFile string) (string, error) {
+	bs, err := os.ReadFile(gomodFile) // nolint: gosec
 	if err != nil {
 		return "", fmt.Errorf("cannot open go.mod file: %w", err)
 	}
 
-	matches := regexp.MustCompile(`module\s+(.+)`).FindStringSubmatch(string(bs))
-
+	matches := modulePattern.FindStringSubmatch(string(bs))
 	if len(matches) == 0 {
 		return "", fmt.Errorf("could not determine package name; make sure go.mod file is valid")
 	}
