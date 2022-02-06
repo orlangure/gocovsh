@@ -1,4 +1,4 @@
-# gocovsh
+# gocovsh ![Test](https://github.com/orlangure/gnomock/workflows/Test/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/orlangure/gocovsh)](https://goreportcard.com/report/github.com/orlangure/gocovsh) [![codecov](https://codecov.io/gh/orlangure/gocovsh/branch/master/graph/badge.svg?token=F0XYPSEIMK)](https://codecov.io/gh/orlangure/gocovsh)
 
 `gocovsh` is a tool for exploring [Go Coverage
 reports](https://go.dev/blog/cover) from the command line.
