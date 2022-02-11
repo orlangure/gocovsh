@@ -2,7 +2,9 @@
 
 `gocovsh` is a tool for exploring [Go Coverage
 reports](https://go.dev/blog/cover) from the command line.
-[Screenshots](#screenshots) below.
+
+[Screenshots](#screenshots) below. Don't skip the [Giving
+back](#giving-back) section!
 
 ## Installation
 
@@ -50,6 +52,19 @@ go install github.com/orlangure/gocovsh@v0.1.0
 
 3. Use `j/k/enter/esc` keys to explore the report. See built-in help for more
    key-bindings.
+
+## Giving back
+
+This is a free and open source project that hopefully helps its users, at least
+a little. Even though I don't need donations to support it, I understand that
+there are people that wish to give back anyway. If you are one of them, I
+encourage you to [plant some trees with Tree
+Nation](https://tree-nation.com/plant/offer) 🌲 🌳 🌴
+
+If you want me to know about your contribution, make sure to use
+`orlangure+gocovsh@gmail.com` as the recipient email.
+
+Thank you!
 
 ## Screenshots
 
