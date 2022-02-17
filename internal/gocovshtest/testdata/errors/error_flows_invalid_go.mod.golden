@@ -1,0 +1,8 @@
+                    
+ [1;38;2;255;85;85mInvalid go.mod file[0m
+                                                                  
+ go.mod file does not include a valid Go module name: `module ...`
+
+                       
+ Press any key to exit 
+                       
