@@ -12,11 +12,18 @@ tasks:
     desc: Update testdata, such as dummy coverage report or golden files
     cmds:
       - task: generate-general-coverage
+      - task: generate-errors-coverage
       - task: update-golden-files
 
   generate-general-coverage:
-    desc: Update dummy project coverage report
+    desc: Update dummy project coverage report for happy flows
     dir: ./internal/gocovshtest/testdata/general
+    cmds:
+      - go test -coverprofile coverage.out .
+
+  generate-errors-coverage:
+    desc: Update dummy project coverage report for error flows
+    dir: ./internal/gocovshtest/testdata/errors
     cmds:
       - go test -coverprofile coverage.out .
 

@@ -1,0 +1,11 @@
+                           
+ [1;38;2;255;85;85mSource code file not found[0m
+                                                                           
+ A file that appears in the coverage report was not found in the file tree.
+ Update the coverage report and try again.                                 
+                                                                
+ [38;2;192;192;192mThe original error was:[0m                                        
+ [38;2;192;192;192mopen testdata/errors/invalid_file.go: no such file or directory[0m
+                       
+ Press any key to exit 
+                       

@@ -4,6 +4,7 @@ package model
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -14,6 +15,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/orlangure/gocovsh/internal/codeview"
+	"github.com/orlangure/gocovsh/internal/errorview"
 	"golang.org/x/tools/cover"
 )
 
@@ -35,8 +37,9 @@ var (
 type viewName string
 
 const (
-	activeViewList viewName = "list"
-	activeViewCode viewName = "code"
+	activeViewList  viewName = "list"
+	activeViewCode  viewName = "code"
+	activeViewError viewName = "error"
 )
 
 type helpState int
@@ -76,7 +79,8 @@ type Model struct {
 	activeView viewName
 	helpState  helpState
 	ready      bool
-	err        error
+
+	err errorview.Model
 }
 
 // Init implements tea.Model.
@@ -112,6 +116,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list, cmd = m.list.Update(msg)
 	case activeViewCode:
 		m.code, cmd = m.code.Update(msg)
+	case activeViewError:
+		m.err, cmd = m.err.Update(msg)
 	}
 
 	return m, cmd
@@ -119,13 +125,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View implements tea.Model.
 func (m *Model) View() string {
-	if m.err != nil {
-		// TODO: add error style
-		return fmt.Sprintf("Error: %s\nPress any key to exit\n", m.err)
-	}
-
 	if !m.ready {
 		return "Initializing..."
+	}
+
+	if m.isErrorView() {
+		return m.err.View()
 	}
 
 	if m.isCodeView() {
@@ -145,6 +150,10 @@ func (m *Model) isCodeView() bool {
 
 func (m *Model) isListView() bool {
 	return m.activeView == activeViewList
+}
+
+func (m *Model) isErrorView() bool {
+	return m.activeView == activeViewError
 }
 
 func (m *Model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
@@ -174,14 +183,15 @@ func (m *Model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) onError(err error) (tea.Model, tea.Cmd) {
-	m.err = err
+	m.err.SetError(err)
+	m.activeView = activeViewError
+
 	return m, nil
 }
 
 func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd) {
 	if len(profiles) == 0 {
-		m.err = fmt.Errorf("no profiles found; you may need to run `go test -coverprofile=coverage.out`")
-		return m, nil
+		return m.onError(errNoProfiles{})
 	}
 
 	m.items = make([]list.Item, len(profiles))
@@ -203,9 +213,9 @@ func (m *Model) onFileContentLoaded(content []string) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
-	// exit on any key in case of error
-	if m.err != nil {
-		return m, tea.Quit
+	// allow error model to process the keys
+	if m.isErrorView() {
+		return nil, nil
 	}
 
 	// don't match any of the keys below if we're actively filtering.
@@ -292,7 +302,11 @@ func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 
 		profiles, err := cover.ParseProfiles(profilesFile)
 		if err != nil {
-			return fmt.Errorf("failed to parse cover profiles: %w", err)
+			if errors.Is(err, os.ErrNotExist) {
+				return errNoCoverageFile{err}
+			}
+
+			return errInvalidCoverageFile{err}
 		}
 
 		for i, p := range profiles {
@@ -307,12 +321,12 @@ func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 func determinePackageName(gomodFile string) (string, error) {
 	bs, err := os.ReadFile(gomodFile) // nolint: gosec
 	if err != nil {
-		return "", fmt.Errorf("cannot open go.mod file: %w", err)
+		return "", errGoModNotFound{err}
 	}
 
 	matches := modulePattern.FindStringSubmatch(string(bs))
 	if len(matches) == 0 {
-		return "", fmt.Errorf("could not determine package name; make sure go.mod file is valid")
+		return "", errInvalidGoMod{}
 	}
 
 	return matches[1], nil
@@ -325,7 +339,11 @@ func loadFile(filename string, profile *cover.Profile) tea.Cmd {
 	return func() tea.Msg {
 		f, err := os.Open(filename)
 		if err != nil {
-			return fmt.Errorf("could not open file %s: %w", filename, err)
+			if errors.Is(err, os.ErrNotExist) {
+				return errSourceFileNotFound{err}
+			}
+
+			return errCantOpenSourceFile{fmt.Errorf("could not open file %s: %w", filename, err)}
 		}
 
 		defer func() { _ = f.Close() }()
@@ -340,7 +358,7 @@ func loadFile(filename string, profile *cover.Profile) tea.Cmd {
 
 		highlightedText, err := colorize(lines, profile)
 		if err != nil {
-			return fmt.Errorf("could not colorize file %s: %w", filename, err)
+			return errMismatchingProfile{fmt.Errorf("could not colorize file %s: %w", filename, err)}
 		}
 
 		return highlightedText
@@ -350,7 +368,7 @@ func loadFile(filename string, profile *cover.Profile) tea.Cmd {
 func colorize(lines []string, profile *cover.Profile) (contents fileContents, err error) {
 	defer func() {
 		if rr := recover(); rr != nil {
-			err = fmt.Errorf("unexpected error in coverage profile: potentially mismatching profile and source code: %v", rr)
+			err = fmt.Errorf("%s", rr)
 		}
 	}()
 
