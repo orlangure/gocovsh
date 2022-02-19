@@ -3,18 +3,16 @@
 `gocovsh` is a tool for exploring [Go Coverage
 reports](https://go.dev/blog/cover) from the command line.
 
-[Screenshots](#screenshots) below. Don't skip the [Giving
-back](#giving-back) section!
+Don't skip the [Giving back](#giving-back) section! 💰
+
+[Demo](#demo) below 🎬 👇
 
 ## Installation
 
 ### Using [Homebrew](https://brew.sh/)
 
 ```bash
-# make sure brew is installed
-brew tap orlangure/tap
-brew update
-brew install gocovsh
+brew install orlangure/tap/gocovsh
 ```
 
 ### Pre-built binary
@@ -29,7 +27,7 @@ Grab your pre-built binary from the
 go install github.com/orlangure/gocovsh@latest
 
 # or install a specific version
-go install github.com/orlangure/gocovsh@v0.1.0
+go install github.com/orlangure/gocovsh@v0.2.0
 ```
 
 ## Usage
@@ -39,7 +37,7 @@ go install github.com/orlangure/gocovsh@v0.1.0
     go test -cover -coverprofile coverage.out
     ```
 
-   For more information about generating Go coverage reports, see [my blog
+   For more information about generating Go coverage reports, see 📝 [my blog
    post](https://fedorov.dev/posts/2020-06-27-golang-end-to-end-test-coverage/).
 
 2. Run `gocovsh` at the same folder with `coverage.out` report and `go.mod`
@@ -66,8 +64,5 @@ If you want me to know about your contribution, make sure to use
 
 Thank you!
 
-## Screenshots
-
-<img width="900" alt="image" src="https://user-images.githubusercontent.com/10244414/151678881-74b52fe5-0dea-4411-aa65-2343d71b8516.png">
-<img width="900" alt="image" src="https://user-images.githubusercontent.com/10244414/151678915-e323a185-679f-48ff-9582-63c48edd09c0.png">
-
+## Demo
+[![asciicast](https://asciinema.org/a/470199.svg)](https://asciinema.org/a/470199)
