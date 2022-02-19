@@ -17,10 +17,12 @@ var (
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
 	statusBarStyle    = lipgloss.NewStyle().MarginLeft(4).Foreground(lipgloss.Color(inactiveColor))
+	percentageStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(inactiveColor)).PaddingLeft(1)
 )
 
 type coverProfile struct {
-	profile *cover.Profile
+	profile    *cover.Profile
+	percentage float64
 }
 
 func (f *coverProfile) FilterValue() string { return f.profile.FileName }
@@ -36,12 +38,18 @@ func (d coverProfileDelegate) Render(w io.Writer, m list.Model, index int, listI
 		return
 	}
 
-	fn := itemStyle.Render
+	line := d.renderBaseLine(profile)
+
 	if index == m.Index() {
-		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
-		}
+		line = selectedItemStyle.Render("> " + line)
+	} else {
+		line = itemStyle.Render(line)
 	}
 
-	fmt.Fprint(w, fn(profile.profile.FileName))
+	fmt.Fprint(w, line)
+}
+
+func (d coverProfileDelegate) renderBaseLine(p *coverProfile) string {
+	percentage := percentageStyle.Render(fmt.Sprintf("%.2f%%", p.percentage))
+	return fmt.Sprintf("%s %s", p.profile.FileName, percentage)
 }

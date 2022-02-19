@@ -1,19 +1,19 @@
-                                                                      
-    Available files:                                                  
-                                                                      
-    [38;2;80;80;80m2 items[0m                                                           
-    covered.go                                                        
-  [38;2;0;255;0m> partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go[0m
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
-                                                                      
+                                                                              
+    Available files:                                                          
+                                                                              
+    [38;2;127;127;127m2 items[0m                                                                   
+    covered.go  [38;2;127;127;127m100.00%[0m                                                       
+  [38;2;0;255;0m> partial_with_a_very_long_name_to_trigger_ellipsis_in_the_output.go  [38;2;127;127;127m75.00%[0m[0m
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              
+                                                                              

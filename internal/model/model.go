@@ -23,7 +23,7 @@ const (
 	// TODO: support themes + dark/light mode.
 	primaryColor   = "#00ff00"
 	secondaryColor = "#ff0000"
-	inactiveColor  = "#505050"
+	inactiveColor  = "#7f7f7f"
 )
 
 var (
@@ -199,7 +199,10 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 	for i, p := range profiles {
 		// package name should already be set
 		p.FileName = strings.TrimPrefix(p.FileName, m.detectedPackageName+"/")
-		m.items[i] = &coverProfile{profile: p}
+		m.items[i] = &coverProfile{
+			profile:    p,
+			percentage: percentCovered(p),
+		}
 	}
 
 	return m, m.list.SetItems(m.items)
@@ -424,4 +427,28 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 	}
 
 	return buf, nil
+}
+
+// percentCovered returns, as a percentage, the fraction of the statements in
+// the profile covered by the test run.
+// In effect, it reports the coverage of a given source file.
+//
+// Taken from golang/tools repo.
+// https://github.com/golang/tools/blob/master/cmd/cover/html.go
+func percentCovered(p *cover.Profile) float64 {
+	var total, covered int64
+
+	for _, b := range p.Blocks {
+		total += int64(b.NumStmt)
+
+		if b.Count > 0 {
+			covered += int64(b.NumStmt)
+		}
+	}
+
+	if total == 0 {
+		return 0
+	}
+
+	return float64(covered) / float64(total) * 100
 }
