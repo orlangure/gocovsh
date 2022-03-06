@@ -56,6 +56,7 @@ func TestLogger(t *testing.T) {
 	logs, err := os.ReadFile(f.Name())
 	require.NoError(t, err)
 	require.Contains(t, string(logs), "logging to")
+
 	if runtime.GOOS == "windows" {
 		// https://github.com/docker/compose/issues/8186#issuecomment-814180124
 		t.Log("Workaround for containerd/console bug")

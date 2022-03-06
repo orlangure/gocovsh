@@ -326,18 +326,23 @@ func determinePackageName(gomodFile string) (string, error) {
 	if err != nil {
 		return "", errGoModNotFound{err}
 	}
+
 	defer func() { _ = f.Close() }()
 
 	lines := []string{}
 	scanner := bufio.NewScanner(f)
+
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
 			return "", errInvalidGoMod{err}
 		}
+
 		lines = append(lines, scanner.Text())
 	}
+
 	content := strings.Join(lines, "\n")
 	matches := modulePattern.FindStringSubmatch(content)
+
 	if len(matches) == 0 {
 		return "", errInvalidGoMod{}
 	}
