@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func isWindows() bool { return runtime.GOOS == "windows" }
+
 func TestErrorFlows(t *testing.T) {
 	g := goldie.New(t, goldie.WithFixtureDir("testdata/errors"))
 
@@ -28,7 +30,7 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		if runtime.GOOS == "windows" {
+		if isWindows() {
 			g.Assert(t, "error_flows_missing_coverage_file_windows", []byte(mm.View()))
 		} else {
 			g.Assert(t, "error_flows_missing_coverage_file", []byte(mm.View()))
@@ -59,7 +61,7 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		if runtime.GOOS == "windows" {
+		if isWindows() {
 			g.Assert(t, "error_flows_missing_go.mod_file_windows", []byte(mm.View()))
 		} else {
 			g.Assert(t, "error_flows_missing_go.mod_file", []byte(mm.View()))
@@ -82,7 +84,7 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		if runtime.GOOS == "windows" {
+		if isWindows() {
 			g.Assert(t, "error_flows_invalid_coverage_file_windows", []byte(mm.View()))
 		} else {
 			g.Assert(t, "error_flows_invalid_coverage_file", []byte(mm.View()))
@@ -135,7 +137,7 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(errMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		if runtime.GOOS == "windows" {
+		if isWindows() {
 			g.Assert(t, "error_flows_missing_source_file_windows", []byte(mm.View()))
 		} else {
 			g.Assert(t, "error_flows_missing_source_file", []byte(mm.View()))
