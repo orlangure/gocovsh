@@ -1,6 +1,7 @@
 package gocovshtest
 
 import (
+	"runtime"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -27,7 +28,11 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		g.Assert(t, "error_flows_missing_coverage_file", []byte(mm.View()))
+		if runtime.GOOS == "windows" {
+			g.Assert(t, "error_flows_missing_coverage_file_windows", []byte(mm.View()))
+		} else {
+			g.Assert(t, "error_flows_missing_coverage_file", []byte(mm.View()))
+		}
 
 		mm, cmd = mt.sendLetterKey('f')
 		require.NotNil(t, mm)
@@ -54,7 +59,11 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		g.Assert(t, "error_flows_missing_go.mod_file", []byte(mm.View()))
+		if runtime.GOOS == "windows" {
+			g.Assert(t, "error_flows_missing_go.mod_file_windows", []byte(mm.View()))
+		} else {
+			g.Assert(t, "error_flows_missing_go.mod_file", []byte(mm.View()))
+		}
 	})
 
 	t.Run("invalid coverage file", func(t *testing.T) {
@@ -73,7 +82,11 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		g.Assert(t, "error_flows_invalid_coverage_file", []byte(mm.View()))
+		if runtime.GOOS == "windows" {
+			g.Assert(t, "error_flows_invalid_coverage_file_windows", []byte(mm.View()))
+		} else {
+			g.Assert(t, "error_flows_invalid_coverage_file", []byte(mm.View()))
+		}
 	})
 
 	t.Run("no profiles", func(t *testing.T) {
@@ -122,7 +135,11 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(errMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		g.Assert(t, "error_flows_missing_source_file", []byte(mm.View()))
+		if runtime.GOOS == "windows" {
+			g.Assert(t, "error_flows_missing_source_file_windows", []byte(mm.View()))
+		} else {
+			g.Assert(t, "error_flows_missing_source_file", []byte(mm.View()))
+		}
 	})
 
 	t.Run("invalid go.mod", func(t *testing.T) {

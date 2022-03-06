@@ -1,0 +1,11 @@
+                             
+ [1;38;2;255;85;85mgo.mod file is not available[0m
+                                                           
+ This program must be executed from Go project root.       
+ Run the program from the folder that contains go.mod file.
+                                                                                                             
+ [38;2;192;192;192mThe original error was:[0m                                                                                     
+ [38;2;192;192;192mfailed to determine package name: open testdata/no-go.mod/go.mod: The system cannot find the path specified.[0m
+                       
+ Press any key to exit 
+                       

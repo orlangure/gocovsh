@@ -1,0 +1,11 @@
+                      
+ [1;38;2;255;85;85mInvalid coverage file[0m
+                                                           
+ The provided coverage file was found, but can't be parsed.
+ Update the coverage report and try again.                 
+                                
+ [38;2;192;192;192mThe original error was:[0m        
+ [38;2;192;192;192mbad mode line: invalid coverage[0m
+                       
+ Press any key to exit 
+                       
