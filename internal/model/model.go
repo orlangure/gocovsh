@@ -322,25 +322,12 @@ func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 }
 
 func determinePackageName(gomodFile string) (string, error) {
-	f, err := os.Open(gomodFile) // nolint: gosec
+	bs, err := os.ReadFile(gomodFile) // nolint: gosec
 	if err != nil {
 		return "", errGoModNotFound{err}
 	}
 
-	defer func() { _ = f.Close() }()
-
-	lines := []string{}
-	scanner := bufio.NewScanner(f)
-
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return "", errInvalidGoMod{err}
-		}
-
-		lines = append(lines, scanner.Text())
-	}
-
-	content := strings.Join(lines, "\n")
+	content := strings.ReplaceAll(string(bs), "\r\n", "\n")
 	matches := modulePattern.FindStringSubmatch(content)
 
 	if len(matches) == 0 {
