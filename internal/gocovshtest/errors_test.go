@@ -84,11 +84,7 @@ func TestErrorFlows(t *testing.T) {
 		mm, cmd = mt.sendErrorMsg(initMsg)
 		require.NotNil(t, mm)
 		require.Nil(t, cmd)
-		if isWindows() {
-			g.Assert(t, "error_flows_invalid_coverage_file_windows", []byte(mm.View()))
-		} else {
-			g.Assert(t, "error_flows_invalid_coverage_file", []byte(mm.View()))
-		}
+		g.Assert(t, "error_flows_invalid_coverage_file", []byte(mm.View()))
 	})
 
 	t.Run("no profiles", func(t *testing.T) {
