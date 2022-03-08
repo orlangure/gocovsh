@@ -327,7 +327,9 @@ func determinePackageName(gomodFile string) (string, error) {
 		return "", errGoModNotFound{err}
 	}
 
-	matches := modulePattern.FindStringSubmatch(string(bs))
+	content := strings.ReplaceAll(string(bs), "\r\n", "\n")
+	matches := modulePattern.FindStringSubmatch(content)
+
 	if len(matches) == 0 {
 		return "", errInvalidGoMod{}
 	}
