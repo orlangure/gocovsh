@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"runtime"
 	"testing"
@@ -62,3 +64,60 @@ func TestLogger(t *testing.T) {
 		t.Log("Workaround for containerd/console bug")
 	}
 }
+
+func TestInput(t *testing.T) {
+	t.Run("read input with pipe mode", func(t *testing.T) {
+		flagSet := flag.NewFlagSet("test", flag.ContinueOnError)
+		f := newMockFile("foo\nbar\r\nbaz\n", os.ModeNamedPipe)
+		p := program.New(
+			program.WithInput(f),
+			program.WithFlagSet(flagSet, nil),
+		)
+
+		require.Error(t, p.Run())
+		require.True(t, f.inputRead)
+	})
+
+	t.Run("ignore input with other mode", func(t *testing.T) {
+		flagSet := flag.NewFlagSet("test", flag.ContinueOnError)
+		f := newMockFile("foo\nbar\r\nbaz\n", os.ModeDir)
+		p := program.New(
+			program.WithInput(f),
+			program.WithFlagSet(flagSet, nil),
+		)
+
+		require.Error(t, p.Run())
+		require.False(t, f.inputRead)
+	})
+}
+
+func newMockFile(data string, mode fs.FileMode) *mockFile {
+	return &mockFile{
+		reader: bytes.NewBufferString(data),
+		size:   int64(len(data)),
+		mode:   mode,
+	}
+}
+
+type mockFile struct {
+	reader    io.Reader
+	mode      fs.FileMode
+	size      int64
+	inputRead bool
+}
+
+func (m *mockFile) Stat() (fs.FileInfo, error) { return &mockFileInfo{size: m.size, mode: m.mode}, nil }
+func (m *mockFile) Close() error               { return nil }
+func (m *mockFile) Read(buf []byte) (int, error) {
+	m.inputRead = true
+	return m.reader.Read(buf)
+}
+
+type mockFileInfo struct {
+	fs.FileInfo
+	size int64
+	mode fs.FileMode
+}
+
+func (fi *mockFileInfo) Mode() os.FileMode { return fi.mode }
+func (fi *mockFileInfo) Size() int64       { return fi.size }

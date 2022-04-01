@@ -1,6 +1,7 @@
 package gocovshtest
 
 import (
+	"path"
 	"testing"
 
 	"github.com/sebdah/goldie/v2"
@@ -8,11 +9,24 @@ import (
 )
 
 func TestHappyFlow(t *testing.T) {
-	g := goldie.New(t, goldie.WithFixtureDir("testdata/general"))
+	t.Run("no requested files", func(t *testing.T) {
+		testHappyFlow(t, "not-requested", nil)
+	})
+
+	t.Run("requested files", func(t *testing.T) {
+		testHappyFlow(t, "requested", []string{"covered.go"})
+	})
+}
+
+func testHappyFlow(t *testing.T, prefix string, requestedFiles []string) {
+	dir := path.Join("testdata", "general", prefix)
+	g := goldie.New(t, goldie.WithFixtureDir(dir))
+
 	mt := &modelTest{
 		T:               t,
 		profileFilename: "profile.cover",
 		codeRoot:        "testdata/general",
+		requestedFiles:  requestedFiles,
 	}
 
 	t.Run("initial setup", func(t *testing.T) {
