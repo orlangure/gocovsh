@@ -16,3 +16,14 @@ func WithCodeRoot(root string) Option {
 		m.codeRoot = root
 	}
 }
+
+// WithRequestedFiles sets the list of files to be displayed.
+func WithRequestedFiles(files []string) Option {
+	return func(m *Model) {
+		m.requestedFiles = make(map[string]bool)
+
+		for _, v := range files {
+			m.requestedFiles[v] = true
+		}
+	}
+}

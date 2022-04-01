@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"regexp"
@@ -75,6 +76,7 @@ type Model struct {
 	codeRoot            string
 	profileFilename     string
 	detectedPackageName string
+	requestedFiles      map[string]bool
 
 	activeView viewName
 	helpState  helpState
@@ -85,7 +87,7 @@ type Model struct {
 
 // Init implements tea.Model.
 func (m *Model) Init() tea.Cmd {
-	return loadProfiles(m.codeRoot, m.profileFilename)
+	return m.loadProfiles(m.codeRoot, m.profileFilename)
 }
 
 // Update implements tea.Model.
@@ -293,7 +295,7 @@ func (m *Model) toggleHelp() {
 	}
 }
 
-func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
+func (m *Model) loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 	return func() tea.Msg {
 		gomodFile := path.Join(codeRoot, "go.mod")
 		profilesFile := path.Join(codeRoot, profileFilename)
@@ -312,12 +314,23 @@ func loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 			return errInvalidCoverageFile{err}
 		}
 
-		for i, p := range profiles {
+		finalProfiles := make([]*cover.Profile, 0, len(profiles))
+		allFilesRequested := len(m.requestedFiles) == 0
+
+		for _, p := range profiles {
 			p.FileName = strings.TrimPrefix(p.FileName, pkg+"/")
-			profiles[i] = p
+
+			if !allFilesRequested {
+				if _, ok := m.requestedFiles[p.FileName]; !ok {
+					log.Println("skipping", p.FileName)
+					continue
+				}
+			}
+
+			finalProfiles = append(finalProfiles, p)
 		}
 
-		return profiles
+		return finalProfiles
 	}
 }
 

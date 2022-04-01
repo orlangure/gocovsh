@@ -22,6 +22,7 @@ type modelTest struct {
 
 	profileFilename string
 	codeRoot        string
+	requestedFiles  []string
 
 	m *model.Model
 }
@@ -30,6 +31,7 @@ func (t *modelTest) init() tea.Cmd {
 	t.m = model.New(
 		model.WithProfileFilename(t.profileFilename),
 		model.WithCodeRoot(t.codeRoot),
+		model.WithRequestedFiles(t.requestedFiles),
 	)
 
 	initCmd := t.m.Init()

@@ -3,6 +3,7 @@ package program
 import (
 	"flag"
 	"io"
+	"io/fs"
 )
 
 // Option is a function that can be passed to WithOptions.
@@ -42,5 +43,13 @@ func WithFlagSet(fs *flag.FlagSet, args []string) Option {
 func WithOutput(w io.Writer) Option {
 	return func(p *Program) {
 		p.output = w
+	}
+}
+
+// WithInput sets the stdin for the program. This should be used for testing
+// the features that read from stdin.
+func WithInput(file fs.File) Option {
+	return func(p *Program) {
+		p.input = file
 	}
 }
