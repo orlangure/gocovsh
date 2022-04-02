@@ -59,7 +59,8 @@ go install github.com/orlangure/gocovsh@v0.2.0
 
    ```bash
    gocovsh
-   gocovsh --profile profile.out # for other coverage profile names
+   gocovsh --profile profile.out  # for other coverage profile names
+   git diff --name-only | gocovsh # only show changed files
    ```
 
 3. Use `j/k/enter/esc` keys to explore the report. See built-in help for more
