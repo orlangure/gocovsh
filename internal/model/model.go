@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -195,6 +196,10 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 	if len(profiles) == 0 {
 		return m.onError(errNoProfiles{})
 	}
+
+	sort.Slice(profiles, func(i, j int) bool {
+		return percentCovered(profiles[i]) < percentCovered(profiles[j])
+	})
 
 	m.items = make([]list.Item, len(profiles))
 
