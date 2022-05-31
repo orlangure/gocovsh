@@ -10,6 +10,13 @@ func WithProfileFilename(name string) Option {
 	}
 }
 
+// WithCoverageSorting asks for the profiles to be sorted by coverage percent instead of alphabetically.
+func WithCoverageSorting(sortByCoverage bool) Option {
+	return func(m *Model) {
+		m.sortByCoverage = sortByCoverage
+	}
+}
+
 // WithCodeRoot sets the root directory of the code to be analyzed.
 func WithCodeRoot(root string) Option {
 	return func(m *Model) {

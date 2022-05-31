@@ -50,7 +50,6 @@ func (d coverProfileDelegate) Render(w io.Writer, m list.Model, index int, listI
 }
 
 func (d coverProfileDelegate) renderBaseLine(p *coverProfile) string {
-	percentageString := fmt.Sprintf("%3d%%", int(p.percentage))
-	percentage := percentageStyle.Render(percentageString)
-	return fmt.Sprintf("%s %s", percentage, p.profile.FileName)
+	percentage := percentageStyle.Render(fmt.Sprintf("%.2f%%", p.percentage))
+	return fmt.Sprintf("%s %s", p.profile.FileName, percentage)
 }

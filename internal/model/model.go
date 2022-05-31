@@ -76,6 +76,7 @@ type Model struct {
 
 	codeRoot            string
 	profileFilename     string
+	sortByCoverage      bool
 	detectedPackageName string
 	requestedFiles      map[string]bool
 
@@ -197,9 +198,11 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 		return m.onError(errNoProfiles{})
 	}
 
-	sort.Slice(profiles, func(i, j int) bool {
-		return percentCovered(profiles[i]) < percentCovered(profiles[j])
-	})
+	if m.sortByCoverage {
+		sort.Slice(profiles, func(i, j int) bool {
+			return percentCovered(profiles[i]) < percentCovered(profiles[j])
+		})
+	}
 
 	m.items = make([]list.Item, len(profiles))
 
