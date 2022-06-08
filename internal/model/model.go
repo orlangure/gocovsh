@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -75,6 +76,7 @@ type Model struct {
 
 	codeRoot            string
 	profileFilename     string
+	sortByCoverage      bool
 	detectedPackageName string
 	requestedFiles      map[string]bool
 
@@ -194,6 +196,12 @@ func (m *Model) onError(err error) (tea.Model, tea.Cmd) {
 func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd) {
 	if len(profiles) == 0 {
 		return m.onError(errNoProfiles{})
+	}
+
+	if m.sortByCoverage {
+		sort.Slice(profiles, func(i, j int) bool {
+			return percentCovered(profiles[i]) < percentCovered(profiles[j])
+		})
 	}
 
 	m.items = make([]list.Item, len(profiles))
