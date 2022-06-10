@@ -65,6 +65,9 @@ type Program struct {
 	commit  string
 	date    string
 
+	modVersion string
+	modSum     string
+
 	showVersion     bool
 	profileFilename string
 	sortByCoverage  bool
@@ -89,6 +92,13 @@ func (p *Program) Run() error {
 			"Version: %s\nCommit: %s\nDate: %s\n",
 			p.version, p.commit, p.date,
 		)
+		if p.modVersion != "" && err != nil {
+			_, err = fmt.Fprintf(
+				p.output,
+				"Module Version: %s\nModule Checksum: %s\n",
+				p.modVersion, p.modSum,
+			)
+		}
 
 		return err
 	}

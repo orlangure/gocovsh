@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io"
 	"io/fs"
+	"runtime/debug"
 )
 
 // Option is a function that can be passed to WithOptions.
@@ -15,6 +16,16 @@ func WithBuildInfo(version, commit, date string) Option {
 		p.version = version
 		p.commit = commit
 		p.date = date
+	}
+}
+
+// WithGoModInfo reads build info and sets its fields, if its available.
+func WithGoModInfo() Option {
+	return func(p *Program) {
+		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
+			p.modVersion = info.Main.Version
+			p.modSum = info.Main.Sum
+		}
 	}
 }
 

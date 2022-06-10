@@ -11,6 +11,8 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
     flags:
       - -trimpath
+gomod:
+  proxy: true
 checksum:
   name_template: 'checksums.txt'
 changelog:
