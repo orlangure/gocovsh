@@ -9,13 +9,14 @@ import (
 
 var (
 	// build information, set by goreleaser.
-	version string
+	version = "dev"
 	commit  string
 	date    string
 )
 
 func main() {
 	if err := program.New(
+		program.WithGoModInfo(),
 		program.WithBuildInfo(version, commit, date),
 		program.WithLogFile(os.Getenv("GOCOVSH_LOG_FILE")),
 	).Run(); err != nil {
