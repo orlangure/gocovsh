@@ -99,6 +99,7 @@ func (p *Program) Run() error {
 		}
 
 		_, err := fmt.Fprint(p.output, out)
+
 		return err
 	}
 
