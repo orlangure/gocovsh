@@ -15,26 +15,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/orlangure/gocovsh/internal/codeview"
 	"github.com/orlangure/gocovsh/internal/errorview"
+	"github.com/orlangure/gocovsh/internal/styles"
 	"golang.org/x/tools/cover"
 )
 
-const (
-	// TODO: support themes + dark/light mode.
-	primaryColor   = "#00ff00"
-	secondaryColor = "#ff0000"
-	inactiveColor  = "#7f7f7f"
-)
-
-var (
-	modulePattern = regexp.MustCompile(`module\s+(.+)`)
-
-	neutralLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(inactiveColor))
-	coveredLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(primaryColor))
-	uncoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(secondaryColor))
-)
+var modulePattern = regexp.MustCompile(`module\s+(.+)`)
 
 type viewName string
 
@@ -79,6 +66,7 @@ type Model struct {
 	sortByCoverage      bool
 	detectedPackageName string
 	requestedFiles      map[string]bool
+	filteredLinesByFile map[string][]int
 
 	activeView viewName
 	helpState  helpState
@@ -258,6 +246,9 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 		if ok {
 			m.code.SetTitle(item.profile.FileName)
 
+			filteredInFile := m.filteredLinesByFile[item.profile.FileName]
+			m.code.SetFilteredLines(filteredInFile)
+
 			adjustedFileName := path.Join(m.codeRoot, item.profile.FileName)
 
 			return m, loadFile(adjustedFileName, item.profile)
@@ -403,22 +394,22 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 	for lineIdx, blockIdx := 0, 0; lineIdx < len(lines); lineIdx++ {
 		line, block := lines[lineIdx], profile.Blocks[blockIdx]
 
-		coverageStyle := uncoveredLine
+		coverageStyle := styles.UncoveredLine
 		if block.Count > 0 {
-			coverageStyle = coveredLine
+			coverageStyle = styles.CoveredLine
 		}
 
 		adjustedStartLine, adjustedEndLine := block.StartLine-1, block.EndLine-1
 
 		// before the first block - not covered
 		if lineIdx < adjustedStartLine {
-			buf = append(buf, neutralLine.Render(line))
+			buf = append(buf, styles.NeutralLine.Render(line))
 			continue
 		}
 
 		// first line - highlight from the start col
 		if lineIdx == adjustedStartLine {
-			uncoveredPart := neutralLine.Render(line[:block.StartCol-1])
+			uncoveredPart := styles.NeutralLine.Render(line[:block.StartCol-1])
 			coveredPart := coverageStyle.Render(line[block.StartCol-1:])
 			buf = append(buf, fmt.Sprintf("%s%s", uncoveredPart, coveredPart))
 
@@ -431,7 +422,7 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 			if block.NumStmt > 0 {
 				buf = append(buf, coverageStyle.Render(line))
 			} else {
-				buf = append(buf, neutralLine.Render(line))
+				buf = append(buf, styles.NeutralLine.Render(line))
 			}
 
 			continue
@@ -444,7 +435,7 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 				blockIdx++
 				lineIdx--
 			} else {
-				buf = append(buf, neutralLine.Render(line))
+				buf = append(buf, styles.NeutralLine.Render(line))
 			}
 		}
 	}

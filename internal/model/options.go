@@ -34,3 +34,25 @@ func WithRequestedFiles(files []string) Option {
 		}
 	}
 }
+
+// WithFilteredLines sets a list of lines to display for every file. Other
+// lines will not appear.
+func WithFilteredLines(files map[string][]int) Option {
+	return func(m *Model) {
+		m.filteredLinesByFile = make(map[string][]int, len(files))
+		uniqueLines := map[int]interface{}{}
+
+		for file, lines := range files {
+			linesWithContext := make([]int, 0, len(lines))
+
+			for _, line := range lines {
+				if _, ok := uniqueLines[line]; !ok {
+					linesWithContext = append(linesWithContext, line)
+					uniqueLines[line] = nil
+				}
+			}
+
+			m.filteredLinesByFile[file] = linesWithContext
+		}
+	}
+}

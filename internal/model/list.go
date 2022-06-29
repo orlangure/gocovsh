@@ -7,17 +7,18 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/orlangure/gocovsh/internal/styles"
 	"golang.org/x/tools/cover"
 )
 
 var (
 	titleStyle        = lipgloss.NewStyle().MarginLeft(2).MarginTop(1)
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color(primaryColor))
+	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color(styles.PrimaryColor))
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	statusBarStyle    = lipgloss.NewStyle().MarginLeft(4).Foreground(lipgloss.Color(inactiveColor))
-	percentageStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(inactiveColor)).PaddingLeft(1)
+	statusBarStyle    = lipgloss.NewStyle().MarginLeft(4).Foreground(lipgloss.Color(styles.InactiveColor))
+	percentageStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color(styles.InactiveColor)).PaddingLeft(1)
 )
 
 type coverProfile struct {
