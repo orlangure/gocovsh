@@ -13,6 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/truncate"
+	"github.com/orlangure/gocovsh/internal/styles"
 )
 
 const (
@@ -46,7 +47,16 @@ var (
 					Align(lipgloss.Right).
 					BorderForeground(lipgloss.Color(lineNumberColor)).
 					Border(lipgloss.NormalBorder(), false, true, false, false)
+
+	blankBlockSeparatorStyle = lipgloss.NewStyle().
+					MarginTop(1).MarginBottom(1).
+					Foreground(lipgloss.Color(lineNumberColor))
 )
+
+type filteredLines struct {
+	actualLines  []int
+	contextLines map[int]bool
+}
 
 // New creates a new codeview model which is rendered into the provided width
 // and height.
@@ -60,13 +70,14 @@ func New(width, height int) Model {
 
 // Model is the codeview model. Use New to create a new instance.
 type Model struct {
-	viewport viewport.Model
-	help     help.Model
-	width    int
-	height   int
-	title    string
-	lines    []string
-	showHelp bool
+	viewport      viewport.Model
+	help          help.Model
+	width         int
+	height        int
+	title         string
+	lines         []string
+	filteredLines filteredLines
+	showHelp      bool
 }
 
 // Update is used to update the internal model state based on the external
@@ -111,6 +122,14 @@ func (m *Model) View() string {
 func (m *Model) SetContent(lines []string) {
 	// save the original lines to not lose content in case of window resizing
 	m.lines = lines
+	m.redrawLines()
+	m.viewport.SetYOffset(0)
+}
+
+// SetFilteredLines sets the lines that should be displayed, while all other
+// lines are hidden. If not set, everything is displayed.
+func (m *Model) SetFilteredLines(filteredLines []int) {
+	m.filteredLines = contextifyFilteredLines(filteredLines)
 	m.redrawLines()
 	m.viewport.SetYOffset(0)
 }
@@ -201,25 +220,80 @@ func (m *Model) recalculateSize() {
 }
 
 func (m *Model) formatLines(lines []string) string {
-	lineNumberStyle := lineNumberStylePlaceholder.Copy().Width(len(fmt.Sprintf("%d", len(lines))) + 1)
-	lineNumberPlaceholder := lineNumberStyle.Render(fmt.Sprintf("%d", 1))
+	if len(lines) == 0 {
+		return ""
+	}
+
+	var (
+		buf             strings.Builder
+		filterApplied   = len(m.filteredLines.actualLines) > 0
+		numberWidth     = len(fmt.Sprintf("%d", len(lines))) + 1
+		lineNumberStyle = lineNumberStylePlaceholder.Copy().Width(numberWidth)
+		printSingleLine = m.linePrinter(&buf, lineNumberStyle)
+	)
+
+	if filterApplied {
+		lastPrintedLine := 0
+		separator := blankBlockSeparatorStyle.Render(strings.Repeat("─", max(0, m.width)))
+
+		for _, thisLineNumber := range m.filteredLines.actualLines {
+			if thisLineNumber > len(lines) {
+				break
+			}
+
+			if thisLineNumber-lastPrintedLine > 1 {
+				buf.WriteString(separator)
+				buf.WriteString(newLine)
+			}
+
+			drawPlus := false
+			line := lines[thisLineNumber-1]
+
+			if !m.filteredLines.contextLines[thisLineNumber] {
+				drawPlus = true
+			}
+
+			printSingleLine(line, thisLineNumber, drawPlus)
+			lastPrintedLine = thisLineNumber
+		}
+	} else {
+		for i, line := range lines {
+			printSingleLine(line, i+1, false)
+		}
+	}
+
+	return buf.String()
+}
+
+type linePrinterFunc func(line string, number int, drawPlus bool)
+
+func (m *Model) linePrinter(buf *strings.Builder, lineNumberStyle lipgloss.Style) linePrinterFunc {
+	filterApplied := len(m.filteredLines.actualLines) > 0
+	lineNumberPlaceholder := lineNumberStyle.Render("1")
 	availableWidth := m.width - lipgloss.Width(lineNumberPlaceholder) - lipgloss.Width(ellipsis)
+	renderedPlus := styles.CoveredLine.Render("+ ")
+	renderedSpace := styles.NeutralLine.Render("  ")
 
-	var buf strings.Builder
-
-	for i, line := range lines {
+	return func(line string, number int, drawPlus bool) {
 		line = m.replaceTabsWithSpaces(line)
-		lineNumber := lineNumberStyle.Render(fmt.Sprintf("%d", i+1))
+		lineNumber := lineNumberStyle.Render(fmt.Sprintf("%d", number))
+		prefix := ""
+
+		if filterApplied {
+			if drawPlus {
+				prefix = renderedPlus
+			} else {
+				prefix = renderedSpace
+			}
+		}
 
 		if lipgloss.Width(line) > availableWidth {
 			line = truncate.StringWithTail(line, uint(availableWidth), ellipsis)
 		}
 
-		buf.WriteString(lipgloss.JoinHorizontal(lipgloss.Left, lineNumber, line))
+		buf.WriteString(lipgloss.JoinHorizontal(lipgloss.Left, prefix, lineNumber, line))
 		buf.WriteString(newLine)
 	}
-
-	return buf.String()
 }
 
 func (m *Model) replaceTabsWithSpaces(line string) string {
@@ -260,4 +334,50 @@ func max(a, b int) int {
 	}
 
 	return b
+}
+
+func contextifyFilteredLines(input []int) filteredLines {
+	if len(input) == 0 {
+		return filteredLines{
+			actualLines:  input,
+			contextLines: map[int]bool{},
+		}
+	}
+
+	extendedLines := make([]int, 0, len(input)+2)
+	contextLines := make(map[int]bool, 2)
+	lastAddedNumber := input[0]
+
+	beforeFirst := lastAddedNumber - 1
+	if beforeFirst > 0 {
+		extendedLines = append(extendedLines, beforeFirst)
+		contextLines[beforeFirst] = true
+	}
+
+	for _, lineNumber := range input {
+		if lineNumber-lastAddedNumber > 1 {
+			afterLast := lastAddedNumber + 1
+			beforeThis := lineNumber - 1
+
+			extendedLines = append(extendedLines, afterLast)
+			contextLines[afterLast] = true
+
+			if afterLast != beforeThis {
+				extendedLines = append(extendedLines, beforeThis)
+				contextLines[beforeThis] = true
+			}
+		}
+
+		extendedLines = append(extendedLines, lineNumber)
+		lastAddedNumber = lineNumber
+	}
+
+	lineAfterLast := input[len(input)-1] + 1
+	extendedLines = append(extendedLines, lineAfterLast)
+	contextLines[lineAfterLast] = true
+
+	return filteredLines{
+		actualLines:  extendedLines,
+		contextLines: contextLines,
+	}
 }

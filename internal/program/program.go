@@ -13,6 +13,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/orlangure/gocovsh/internal/model"
+	"github.com/waigani/diffparser"
 )
 
 const (
@@ -72,12 +73,14 @@ type Program struct {
 	profileFilename string
 	sortByCoverage  bool
 
-	flagSet        *flag.FlagSet
-	args           []string
-	input          fs.File
-	output         io.Writer
-	logFile        string
+	flagSet *flag.FlagSet
+	args    []string
+	input   fs.File
+	output  io.Writer
+	logFile string
+
 	requestedFiles []string
+	diffLines      map[string][]int
 }
 
 // Run parses the command line arguments and runs the program.
@@ -111,6 +114,7 @@ func (p *Program) Run() error {
 		model.WithProfileFilename(p.profileFilename),
 		model.WithRequestedFiles(p.requestedFiles),
 		model.WithCoverageSorting(p.sortByCoverage),
+		model.WithFilteredLines(p.diffLines),
 	)
 
 	if p.logFile != "" {
@@ -140,7 +144,22 @@ func (p *Program) parseInput() error {
 			return fmt.Errorf("failed to read stdin: %w", err)
 		}
 
-		p.requestedFiles = p.splitLines(string(bs))
+		if diff, err := diffparser.Parse(string(bs)); err != nil {
+			// fall back to file list mode - this is not an error
+			p.requestedFiles = p.splitLines(string(bs))
+		} else {
+			p.diffLines = diff.Changed()
+
+			for file := range p.diffLines {
+				if !strings.HasSuffix(file, ".go") {
+					delete(p.diffLines, file)
+				}
+			}
+
+			for _, file := range diff.Files {
+				p.requestedFiles = append(p.requestedFiles, file.NewName)
+			}
+		}
 	}
 
 	return nil

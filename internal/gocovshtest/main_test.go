@@ -23,6 +23,7 @@ type modelTest struct {
 	profileFilename string
 	codeRoot        string
 	requestedFiles  []string
+	filteredLines   map[string][]int
 
 	m *model.Model
 }
@@ -32,6 +33,7 @@ func (t *modelTest) init() tea.Cmd {
 		model.WithProfileFilename(t.profileFilename),
 		model.WithCodeRoot(t.codeRoot),
 		model.WithRequestedFiles(t.requestedFiles),
+		model.WithFilteredLines(t.filteredLines),
 	)
 
 	initCmd := t.m.Init()

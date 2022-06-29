@@ -10,15 +10,26 @@ import (
 
 func TestHappyFlow(t *testing.T) {
 	t.Run("no requested files", func(t *testing.T) {
-		testHappyFlow(t, "not-requested", nil)
+		testHappyFlow(t, "not-requested", nil, nil)
 	})
 
 	t.Run("requested files", func(t *testing.T) {
-		testHappyFlow(t, "requested", []string{"covered.go"})
+		testHappyFlow(t, "requested", []string{"covered.go"}, nil)
+	})
+
+	t.Run("filtered lines", func(t *testing.T) {
+		testHappyFlow(
+			t,
+			"filtered",
+			[]string{"covered.go"},
+			map[string][]int{
+				"covered.go": {4},
+			},
+		)
 	})
 }
 
-func testHappyFlow(t *testing.T, prefix string, requestedFiles []string) {
+func testHappyFlow(t *testing.T, prefix string, requestedFiles []string, filteredLines map[string][]int) {
 	dir := path.Join("testdata", "general", prefix)
 	g := goldie.New(t, goldie.WithFixtureDir(dir))
 
@@ -27,6 +38,7 @@ func testHappyFlow(t *testing.T, prefix string, requestedFiles []string) {
 		profileFilename: "profile.cover",
 		codeRoot:        "testdata/general",
 		requestedFiles:  requestedFiles,
+		filteredLines:   filteredLines,
 	}
 
 	t.Run("initial setup", func(t *testing.T) {

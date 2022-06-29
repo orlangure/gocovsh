@@ -10,6 +10,7 @@ require (
 	github.com/muesli/termenv v0.9.0
 	github.com/sebdah/goldie/v2 v2.5.3
 	github.com/stretchr/testify v1.7.0
+	github.com/waigani/diffparser v0.0.0-20190828052634-7391f219313d
 	golang.org/x/tools v0.1.8
 )
 
