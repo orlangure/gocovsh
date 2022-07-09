@@ -144,21 +144,22 @@ func (p *Program) parseInput() error {
 			return fmt.Errorf("failed to read stdin: %w", err)
 		}
 
-		if diff, err := diffparser.Parse(string(bs)); err != nil {
-			// fall back to file list mode - this is not an error
-			p.requestedFiles = p.splitLines(string(bs))
-		} else {
-			p.diffLines = diff.Changed()
+		if inputStr := strings.TrimSpace(string(bs)); strings.HasPrefix(inputStr, "diff ") {
+			if diff, err := diffparser.Parse(inputStr); err == nil {
+				p.diffLines = diff.Changed()
 
-			for file := range p.diffLines {
-				if !strings.HasSuffix(file, ".go") {
-					delete(p.diffLines, file)
+				for file := range p.diffLines {
+					if !strings.HasSuffix(file, ".go") {
+						delete(p.diffLines, file)
+					}
+				}
+
+				for _, file := range diff.Files {
+					p.requestedFiles = append(p.requestedFiles, file.NewName)
 				}
 			}
-
-			for _, file := range diff.Files {
-				p.requestedFiles = append(p.requestedFiles, file.NewName)
-			}
+		} else {
+			p.requestedFiles = p.splitLines(inputStr)
 		}
 	}
 
