@@ -394,22 +394,22 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 	for lineIdx, blockIdx := 0, 0; lineIdx < len(lines); lineIdx++ {
 		line, block := lines[lineIdx], profile.Blocks[blockIdx]
 
-		coverageStyle := styles.UncoveredLine
+		coverageStyle := styles.CurrentTheme.UncoveredLine
 		if block.Count > 0 {
-			coverageStyle = styles.CoveredLine
+			coverageStyle = styles.CurrentTheme.CoveredLine
 		}
 
 		adjustedStartLine, adjustedEndLine := block.StartLine-1, block.EndLine-1
 
 		// before the first block - not covered
 		if lineIdx < adjustedStartLine {
-			buf = append(buf, styles.NeutralLine.Render(line))
+			buf = append(buf, styles.CurrentTheme.NeutralLine.Render(line))
 			continue
 		}
 
 		// first line - highlight from the start col
 		if lineIdx == adjustedStartLine {
-			uncoveredPart := styles.NeutralLine.Render(line[:block.StartCol-1])
+			uncoveredPart := styles.CurrentTheme.NeutralLine.Render(line[:block.StartCol-1])
 			coveredPart := coverageStyle.Render(line[block.StartCol-1:])
 			buf = append(buf, fmt.Sprintf("%s%s", uncoveredPart, coveredPart))
 
@@ -422,7 +422,7 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 			if block.NumStmt > 0 {
 				buf = append(buf, coverageStyle.Render(line))
 			} else {
-				buf = append(buf, styles.NeutralLine.Render(line))
+				buf = append(buf, styles.CurrentTheme.NeutralLine.Render(line))
 			}
 
 			continue
@@ -435,7 +435,7 @@ func colorize(lines []string, profile *cover.Profile) (contents fileContents, er
 				blockIdx++
 				lineIdx--
 			} else {
-				buf = append(buf, styles.NeutralLine.Render(line))
+				buf = append(buf, styles.CurrentTheme.NeutralLine.Render(line))
 			}
 		}
 	}
