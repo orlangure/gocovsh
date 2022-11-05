@@ -81,4 +81,13 @@ If you want me to know about your contribution, make sure to use
 Thank you!
 
 ## Demo
-[![asciicast](https://asciinema.org/a/470199.svg)](https://asciinema.org/a/470199)
+
+### Viewing Go code coverage reports
+![go code coverage report viewer in the command line](./examples/general.gif)
+
+### Only show Go code coverage of changed files
+![go code coverage report of changed files in the command line](./examples/changed-files.gif)
+
+
+### Go code coverage on top of `git diff`
+![go code coverage report on top of git diff in the command line](./examples/diff-view.gif)
