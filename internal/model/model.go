@@ -15,6 +15,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/orlangure/gocovsh/internal/codeview"
 	"github.com/orlangure/gocovsh/internal/errorview"
 	"github.com/orlangure/gocovsh/internal/styles"
@@ -160,7 +161,7 @@ func (m *Model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
 		m.list.FilterInput.PromptStyle = m.list.FilterInput.PromptStyle.Copy().Margin(1, 0, 0, 0)
 		m.list.Styles.PaginationStyle = paginationStyle
 		m.list.Styles.HelpStyle = helpStyle
-		m.list.Styles.StatusBar = statusBarStyle
+		m.list.Styles.StatusBar = statusBarStyle.Foreground(lipgloss.Color(styles.CurrentTheme.InactiveColor))
 
 		m.ready = true
 	}
