@@ -67,6 +67,22 @@ go install github.com/orlangure/gocovsh@v0.5.1
 3. Use `j/k/enter/esc` keys to explore the report. See built-in help for more
    key-bindings.
 
+## Themes
+
+`gocovsh` supports 3 nice themes (using [Catppuccin
+Theme](https://github.com/catppuccin/catppuccin) project) and an ugly default
+one at this moment. To change the theme, set `GOCOVSH_THEME` environment
+variable to one of the following values: `mocha`, `latte` or `macchiato`:
+
+```bash
+GOCOVSH_THEME=mocha gocovsh
+GOCOVSH_THEME=latte gocovsh
+GOCOVSH_THEME=macchiato gocovsh
+```
+
+To always use the same theme, add `export GOCOVSH_THEME=<theme name>` to your
+`~/.bashrc`, `~/.zshrc` or any other file that you use for shell configuration.
+
 ## Giving back
 
 This is a free and open source project that hopefully helps its users, at least
