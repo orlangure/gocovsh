@@ -1,16 +1,92 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"os"
 
-const (
-	// TODO: support themes + dark/light mode.
-	PrimaryColor   = "#00ff00"
-	SecondaryColor = "#ff0000"
-	InactiveColor  = "#7f7f7f"
+	catppuccin "github.com/catppuccin/go"
+	"github.com/charmbracelet/lipgloss"
 )
 
-var (
-	NeutralLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(InactiveColor))
-	CoveredLine   = lipgloss.NewStyle().Foreground(lipgloss.Color(PrimaryColor))
-	UncoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(SecondaryColor))
-)
+var CurrentTheme Theme
+
+type Theme struct {
+	PrimaryColor   string
+	SecondaryColor string
+	InactiveColor  string
+
+	NeutralLine   lipgloss.Style
+	CoveredLine   lipgloss.Style
+	UncoveredLine lipgloss.Style
+}
+
+func (t *Theme) setStyles() {
+	t.NeutralLine = lipgloss.NewStyle().Foreground(lipgloss.Color(t.InactiveColor))
+	t.CoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(t.PrimaryColor))
+	t.UncoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(t.SecondaryColor))
+}
+
+func CatppuccinMocha() Theme {
+	PrimaryColor := catppuccin.Mocha().Green().Hex
+	SecondaryColor := catppuccin.Mocha().Red().Hex
+	InactiveColor := catppuccin.Mocha().Subtext1().Hex
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
+func CatppuccinMacchiato() Theme {
+	PrimaryColor := catppuccin.Macchiato().Green().Hex
+	SecondaryColor := catppuccin.Macchiato().Red().Hex
+	InactiveColor := catppuccin.Macchiato().Subtext1().Hex
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
+func CatppuccinFrappe() Theme {
+	PrimaryColor := catppuccin.Frappe().Green().Hex
+	SecondaryColor := catppuccin.Frappe().Red().Hex
+	InactiveColor := catppuccin.Frappe().Subtext1().Hex
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
+func CatppuccinLatte() Theme {
+	PrimaryColor := catppuccin.Latte().Green().Hex
+	SecondaryColor := catppuccin.Latte().Red().Hex
+	InactiveColor := catppuccin.Latte().Subtext1().Hex
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
+func Default() Theme {
+	PrimaryColor := "#00ff00"
+	SecondaryColor := "#ff0000"
+	InactiveColor := "#7f7f7f"
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
+func SetTheme() {
+	theme := os.Getenv("GOCOVSH_THEME")
+	switch theme {
+	case "mocha":
+		CurrentTheme = CatppuccinMocha()
+	case "macchiato":
+		CurrentTheme = CatppuccinMacchiato()
+	case "frappe":
+		CurrentTheme = CatppuccinFrappe()
+	case "latte":
+		CurrentTheme = CatppuccinLatte()
+	default:
+		CurrentTheme = Default()
+	}
+}

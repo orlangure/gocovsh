@@ -271,8 +271,8 @@ func (m *Model) linePrinter(buf *strings.Builder, lineNumberStyle lipgloss.Style
 	filterApplied := len(m.filteredLines.actualLines) > 0
 	lineNumberPlaceholder := lineNumberStyle.Render("1")
 	availableWidth := m.width - lipgloss.Width(lineNumberPlaceholder) - lipgloss.Width(ellipsis)
-	renderedPlus := styles.CoveredLine.Render("+ ")
-	renderedSpace := styles.NeutralLine.Render("  ")
+	renderedPlus := styles.CurrentTheme.CoveredLine.Render("+ ")
+	renderedSpace := styles.CurrentTheme.NeutralLine.Render("  ")
 
 	return func(line string, number int, drawPlus bool) {
 		line = m.replaceTabsWithSpaces(line)

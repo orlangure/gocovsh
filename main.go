@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/orlangure/gocovsh/internal/program"
+	"github.com/orlangure/gocovsh/internal/styles"
 )
 
 var (
@@ -15,6 +16,8 @@ var (
 )
 
 func main() {
+	styles.SetTheme()
+
 	if err := program.New(
 		program.WithGoModInfo(),
 		program.WithBuildInfo(version, commit, date),

@@ -16,6 +16,7 @@ require (
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
+	github.com/catppuccin/go v0.0.0-20221030225802-6acc6e593c2f // indirect
 	github.com/containerd/console v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect

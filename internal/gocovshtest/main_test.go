@@ -8,11 +8,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 	"github.com/orlangure/gocovsh/internal/model"
+	"github.com/orlangure/gocovsh/internal/styles"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
 	lipgloss.SetColorProfile(termenv.TrueColor)
+	os.Setenv("GOCOVSH_THEME", "default")
+	styles.SetTheme()
 
 	os.Exit(m.Run())
 }
