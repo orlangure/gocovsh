@@ -45,6 +45,16 @@ func CatppuccinMacchiato() Theme {
 	return t
 }
 
+func CatppuccinFrappe() Theme {
+	PrimaryColor := catppuccin.Frappe().Green().Hex
+	SecondaryColor := catppuccin.Frappe().Red().Hex
+	InactiveColor := catppuccin.Frappe().Subtext1().Hex
+	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t.setStyles()
+
+	return t
+}
+
 func CatppuccinLatte() Theme {
 	PrimaryColor := catppuccin.Latte().Green().Hex
 	SecondaryColor := catppuccin.Latte().Red().Hex
@@ -72,6 +82,8 @@ func SetTheme() {
 		CurrentTheme = CatppuccinMocha()
 	case "macchiato":
 		CurrentTheme = CatppuccinMacchiato()
+	case "frappe":
+		CurrentTheme = CatppuccinFrappe()
 	case "latte":
 		CurrentTheme = CatppuccinLatte()
 	default:
