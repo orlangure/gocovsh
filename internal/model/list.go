@@ -51,6 +51,8 @@ func (d coverProfileDelegate) Render(w io.Writer, m list.Model, index int, listI
 }
 
 func (d coverProfileDelegate) renderBaseLine(p *coverProfile) string {
-	percentage := percentageStyle.Foreground(lipgloss.Color(styles.CurrentTheme.InactiveColor)).Render(fmt.Sprintf("%.2f%%", p.percentage))
+	inactiveColor := lipgloss.Color(styles.CurrentTheme.InactiveColor)
+	percentage := percentageStyle.Foreground(inactiveColor).Render(fmt.Sprintf("%.2f%%", p.percentage))
+
 	return fmt.Sprintf("%s %s", p.profile.FileName, percentage)
 }
