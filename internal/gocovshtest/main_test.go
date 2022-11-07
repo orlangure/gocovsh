@@ -14,6 +14,7 @@ import (
 
 func TestMain(m *testing.M) {
 	lipgloss.SetColorProfile(termenv.TrueColor)
+	os.Setenv("GOCOVSH_THEME", "default")
 	styles.SetTheme()
 
 	os.Exit(m.Run())
