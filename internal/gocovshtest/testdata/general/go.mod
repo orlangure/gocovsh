@@ -1,6 +1,6 @@
 module github.com/orlangure/gocovsh/internal/model/testdata/general
 
-go 1.17
+go 1.19
 
 require github.com/stretchr/testify v1.7.0
 
