@@ -69,14 +69,16 @@ go install github.com/orlangure/gocovsh@v0.5.1
 
 ## Themes
 
-`gocovsh` supports 3 nice themes (using [Catppuccin
+`gocovsh` supports 4 nice themes (using [Catppuccin
 Theme](https://github.com/catppuccin/catppuccin) project) and an ugly default
 one at this moment. To change the theme, set `GOCOVSH_THEME` environment
-variable to one of the following values: `mocha`, `latte` or `macchiato`:
+variable to one of the following values: `mocha`, `latte`, `frappe` or
+`macchiato`:
 
 ```bash
 GOCOVSH_THEME=mocha gocovsh
 GOCOVSH_THEME=latte gocovsh
+GOCOVSH_THEME=frappe gocovsh
 GOCOVSH_THEME=macchiato gocovsh
 ```
 
