@@ -18,7 +18,7 @@ also a part of the constellation [Ursa
 Major](https://en.wikipedia.org/wiki/Ursa_Major), thus the friendly
 dipper-shaped Gopher mascot, created by [Michael Zolotov](https://www.mzolotov.com/).
 
-## <div align="center"> ![Test](https://github.com/orlangure/gnomock/workflows/Test/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/orlangure/gocovsh)](https://goreportcard.com/report/github.com/orlangure/gocovsh) [![codecov](https://codecov.io/gh/orlangure/gocovsh/branch/master/graph/badge.svg?token=F0XYPSEIMK)](https://codecov.io/gh/orlangure/gocovsh)
+## <div align="center"> ![Test](https://github.com/orlangure/gnomock/workflows/Test/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/orlangure/gocovsh)](https://goreportcard.com/report/github.com/orlangure/gocovsh) [![codecov](https://codecov.io/gh/orlangure/gocovsh/branch/master/graph/badge.svg?token=F0XYPSEIMK)](https://codecov.io/gh/orlangure/gocovsh) [![go-recipes](https://raw.githubusercontent.com/nikolaydubina/go-recipes/main/badge.svg?raw=true)](https://github.com/nikolaydubina/go-recipes)
 </div>
 
 ## Installation
