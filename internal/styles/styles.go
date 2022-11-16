@@ -25,51 +25,23 @@ func (t *Theme) setStyles() {
 	t.UncoveredLine = lipgloss.NewStyle().Foreground(lipgloss.Color(t.SecondaryColor))
 }
 
-func CatppuccinMocha() Theme {
-	PrimaryColor := catppuccin.Mocha().Green().Hex
-	SecondaryColor := catppuccin.Mocha().Red().Hex
-	InactiveColor := catppuccin.Mocha().Subtext1().Hex
-	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
-	t.setStyles()
-
-	return t
-}
-
-func CatppuccinMacchiato() Theme {
-	PrimaryColor := catppuccin.Macchiato().Green().Hex
-	SecondaryColor := catppuccin.Macchiato().Red().Hex
-	InactiveColor := catppuccin.Macchiato().Subtext1().Hex
-	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
-	t.setStyles()
-
-	return t
-}
-
-func CatppuccinFrappe() Theme {
-	PrimaryColor := catppuccin.Frappe().Green().Hex
-	SecondaryColor := catppuccin.Frappe().Red().Hex
-	InactiveColor := catppuccin.Frappe().Subtext1().Hex
-	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
-	t.setStyles()
-
-	return t
-}
-
-func CatppuccinLatte() Theme {
-	PrimaryColor := catppuccin.Latte().Green().Hex
-	SecondaryColor := catppuccin.Latte().Red().Hex
-	InactiveColor := catppuccin.Latte().Subtext1().Hex
-	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
-	t.setStyles()
-
-	return t
-}
-
 func Default() Theme {
-	PrimaryColor := "#00ff00"
-	SecondaryColor := "#ff0000"
-	InactiveColor := "#7f7f7f"
-	t := Theme{PrimaryColor: PrimaryColor, SecondaryColor: SecondaryColor, InactiveColor: InactiveColor}
+	t := Theme{
+		PrimaryColor:   "#00ff00",
+		SecondaryColor: "#ff0000",
+		InactiveColor:  "#7f7f7f",
+	}
+	t.setStyles()
+
+	return t
+}
+
+func Catppuccin(cpn catppuccin.Theme) Theme {
+	t := Theme{
+		PrimaryColor:   cpn.Green().Hex,
+		SecondaryColor: cpn.Red().Hex,
+		InactiveColor:  cpn.Subtext1().Hex,
+	}
 	t.setStyles()
 
 	return t
@@ -77,16 +49,10 @@ func Default() Theme {
 
 func SetTheme() {
 	theme := os.Getenv("GOCOVSH_THEME")
-	switch theme {
-	case "mocha":
-		CurrentTheme = CatppuccinMocha()
-	case "macchiato":
-		CurrentTheme = CatppuccinMacchiato()
-	case "frappe":
-		CurrentTheme = CatppuccinFrappe()
-	case "latte":
-		CurrentTheme = CatppuccinLatte()
-	default:
+
+	if variant := catppuccin.Variant(theme); variant != nil {
+		CurrentTheme = Catppuccin(variant)
+	} else {
 		CurrentTheme = Default()
 	}
 }
