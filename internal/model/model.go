@@ -46,7 +46,17 @@ func New(opts ...Option) *Model {
 		activeView: activeViewList,
 		helpState:  helpStateShort,
 		codeRoot:   ".",
+		list:       list.New([]list.Item{}, coverProfileDelegate{}, 0, 0),
 	}
+
+	m.list.Title = "Available files:"
+	m.list.SetShowStatusBar(true)
+	m.list.SetFilteringEnabled(true)
+	m.list.Styles.Title = titleStyle
+	m.list.FilterInput.PromptStyle = m.list.FilterInput.PromptStyle.Copy().Margin(1, 0, 0, 0)
+	m.list.Styles.PaginationStyle = paginationStyle
+	m.list.Styles.HelpStyle = helpStyle
+	m.list.Styles.StatusBar = statusBarStyle.Foreground(lipgloss.Color(styles.CurrentTheme.InactiveColor))
 
 	for _, opt := range opts {
 		opt(m)
@@ -152,17 +162,6 @@ func (m *Model) isErrorView() bool {
 func (m *Model) updateWindowSize(width, height int) (tea.Model, tea.Cmd) {
 	if !m.ready {
 		m.code = codeview.New(width, height)
-
-		m.list = list.New([]list.Item{}, coverProfileDelegate{}, width, height-1)
-		m.list.Title = "Available files:"
-		m.list.SetShowStatusBar(true)
-		m.list.SetFilteringEnabled(true)
-		m.list.Styles.Title = titleStyle
-		m.list.FilterInput.PromptStyle = m.list.FilterInput.PromptStyle.Copy().Margin(1, 0, 0, 0)
-		m.list.Styles.PaginationStyle = paginationStyle
-		m.list.Styles.HelpStyle = helpStyle
-		m.list.Styles.StatusBar = statusBarStyle.Foreground(lipgloss.Color(styles.CurrentTheme.InactiveColor))
-
 		m.ready = true
 	}
 
