@@ -52,7 +52,7 @@ type sortOrder bool
 
 const (
     ASC      sortOrder = true
-    DSC      sortOrder = true
+    DSC      sortOrder = false
 )
 
 type SortState struct {
@@ -65,7 +65,7 @@ func New(opts ...Option) *Model {
 	m := &Model{
 		activeView: activeViewList,
 		helpState:  helpStateShort,
-        sortState:  SortState{Type: sortStateByName, Order: ascend},
+        sortState:  SortState{Type: sortStateByName, Order: ASC},
 		codeRoot:   ".",
 		list:       list.New([]list.Item{}, coverProfileDelegate{}, 0, 0),
 	}
@@ -209,7 +209,7 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 		return m.onError(errNoProfiles{})
 	}
 
-	if m.sortByCoverage {
+	if m.sortByCoverage || m.sortState.Type == sortStateByPercentage {
         m.sortByPercentage(profiles)
 	}
 
@@ -277,9 +277,14 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 
         return m, nil
 
-    //toggle on and inisiate sortByCoverage (default = Asc)
+    //toggle on and insiate sortByCoverage (default = Asc)
     case "s":
-        m.toggleSort(m.profilesLoaded)
+        m.toggleSort()
+        m.Update(m.profilesLoaded)
+        return m, nil
+
+    case "!":
+        m.toggleSortOrder()
         m.Update(m.profilesLoaded)
         return m, nil
 
@@ -290,6 +295,16 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 
 	return nil, nil
 }
+
+func (m *Model) toggleSortOrder() {
+    switch m.sortState.Order {
+    case ASC:
+        m.sortState.Order = DSC
+    case DSC:
+        m.sortState.Order = ASC
+    }
+}
+
 func (m *Model) sortByPercentage(profiles []*cover.Profile) {
     sort.Slice(profiles, func(i, j int) bool {
         if m.sortState.Order == ASC {
@@ -300,15 +315,14 @@ func (m *Model) sortByPercentage(profiles []*cover.Profile) {
     })
 }
 
-func (m *Model) toggleSort(profiles []*cover.Profile) {
+func (m *Model) toggleSort() {
 	switch m.sortState.Type {
 	case sortStateByName :
-		m.sortState.Type = sortStateByName
+		m.sortState.Type = sortStateByPercentage
         // sort all profiles by name
 
 	case sortStateByPercentage:
-        m.sortState.Type = sortStateByPercentage
-        m.toggleSort(profiles)
+        m.sortState.Type = sortStateByName
         // sort all profiles by Ascend percent if isAscend is true
         // else sort by Descend
 	}
