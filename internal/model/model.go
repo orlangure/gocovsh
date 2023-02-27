@@ -40,11 +40,32 @@ const (
 	helpStateFull
 )
 
+type sortType int
+
+const (
+    sortStateByName       sortType = iota 
+    sortStateByPercentage 
+    //sortStateByStatements 
+)
+
+type sortOrder bool
+
+const (
+    ASC      sortOrder = true
+    DSC      sortOrder = true
+)
+
+type SortState struct {
+    Type   sortType
+    Order  sortOrder
+}
+
 // New create a new model that can be used directly in the tea framework.
 func New(opts ...Option) *Model {
 	m := &Model{
 		activeView: activeViewList,
 		helpState:  helpStateShort,
+        sortState:  SortState{Type: sortStateByName, Order: ascend},
 		codeRoot:   ".",
 		list:       list.New([]list.Item{}, coverProfileDelegate{}, 0, 0),
 	}
@@ -79,10 +100,10 @@ type Model struct {
 	requestedFiles      map[string]bool
 	filteredLinesByFile map[string][]int
     profilesLoaded      []*cover.Profile
-    sortByAsc           bool
 
 	activeView viewName
 	helpState  helpState
+    sortState  SortState
 	ready      bool
 
 	err errorview.Model
@@ -189,14 +210,7 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 	}
 
 	if m.sortByCoverage {
-		sort.Slice(profiles, func(i, j int) bool {
-            if m.sortByAsc {
-                return percentCovered(profiles[i]) > percentCovered(profiles[j])
-            } else {
-                return percentCovered(profiles[i]) < percentCovered(profiles[j]) 
-            }
-
-		})
+        m.sortByPercentage(profiles)
 	}
 
 	m.items = make([]list.Item, len(profiles))
@@ -264,15 +278,8 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
         return m, nil
 
     //toggle on and inisiate sortByCoverage (default = Asc)
-    case "[":
-        m.sortByCoverage = true
-        m.sortByAsc = !m.sortByAsc
-        m.Update(m.profilesLoaded)
-        return m, nil
-
-    case "]":
-        m.sortByCoverage = false
-        m.sortByAsc = false
+    case "s":
+        m.toggleSort(m.profilesLoaded)
         m.Update(m.profilesLoaded)
         return m, nil
 
@@ -282,6 +289,29 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 	}
 
 	return nil, nil
+}
+func (m *Model) sortByPercentage(profiles []*cover.Profile) {
+    sort.Slice(profiles, func(i, j int) bool {
+        if m.sortState.Order == ASC {
+            return percentCovered(profiles[i]) > percentCovered(profiles[j])
+        } else {
+            return percentCovered(profiles[i]) < percentCovered(profiles[j]) 
+        }
+    })
+}
+
+func (m *Model) toggleSort(profiles []*cover.Profile) {
+	switch m.sortState.Type {
+	case sortStateByName :
+		m.sortState.Type = sortStateByName
+        // sort all profiles by name
+
+	case sortStateByPercentage:
+        m.sortState.Type = sortStateByPercentage
+        m.toggleSort(profiles)
+        // sort all profiles by Ascend percent if isAscend is true
+        // else sort by Descend
+	}
 }
 
 func (m *Model) toggleHelp() {
