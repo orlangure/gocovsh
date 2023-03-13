@@ -92,9 +92,8 @@ type Model struct {
 
 	code codeview.Model
 
-	codeRoot        string
-	profileFilename string
-	//sortByCoverage      bool
+	codeRoot            string
+	profileFilename     string
 	detectedPackageName string
 	requestedFiles      map[string]bool
 	filteredLinesByFile map[string][]int
