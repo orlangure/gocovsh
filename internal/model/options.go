@@ -13,7 +13,9 @@ func WithProfileFilename(name string) Option {
 // WithCoverageSorting asks for the profiles to be sorted by coverage percent instead of alphabetically.
 func WithCoverageSorting(sortByCoverage bool) Option {
 	return func(m *Model) {
-		m.sortByCoverage = sortByCoverage
+        if sortByCoverage {
+            m.sortState.Type = sortStateByPercentage
+        }
 	}
 }
 

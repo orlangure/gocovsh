@@ -43,21 +43,20 @@ const (
 type sortType int
 
 const (
-    sortStateByName       sortType = iota 
-    sortStateByPercentage 
-    //sortStateByStatements 
+	sortStateByName sortType = iota
+	sortStateByPercentage
 )
 
 type sortOrder bool
 
 const (
-    ASC      sortOrder = true
-    DSC      sortOrder = false
+	asc sortOrder = true
+	dsc sortOrder = false
 )
 
 type SortState struct {
-    Type   sortType
-    Order  sortOrder
+	Type  sortType
+	Order sortOrder
 }
 
 // New create a new model that can be used directly in the tea framework.
@@ -65,7 +64,7 @@ func New(opts ...Option) *Model {
 	m := &Model{
 		activeView: activeViewList,
 		helpState:  helpStateShort,
-        sortState:  SortState{Type: sortStateByName, Order: ASC},
+		sortState:  SortState{Type: sortStateByName, Order: asc},
 		codeRoot:   ".",
 		list:       list.New([]list.Item{}, coverProfileDelegate{}, 0, 0),
 	}
@@ -93,17 +92,17 @@ type Model struct {
 
 	code codeview.Model
 
-	codeRoot            string
-	profileFilename     string
-	sortByCoverage      bool
+	codeRoot        string
+	profileFilename string
+	//sortByCoverage      bool
 	detectedPackageName string
 	requestedFiles      map[string]bool
 	filteredLinesByFile map[string][]int
-    profilesLoaded      []*cover.Profile
+	loadedProfiles      []*cover.Profile
 
 	activeView viewName
 	helpState  helpState
-    sortState  SortState
+	sortState  SortState
 	ready      bool
 
 	err errorview.Model
@@ -209,8 +208,8 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 		return m.onError(errNoProfiles{})
 	}
 
-	if m.sortByCoverage || m.sortState.Type == sortStateByPercentage {
-        m.sortByPercentage(profiles)
+	if m.sortState.Type == sortStateByPercentage {
+		m.sortByPercentage()
 	}
 
 	m.items = make([]list.Item, len(profiles))
@@ -275,18 +274,15 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 			return m, loadFile(adjustedFileName, item.profile)
 		}
 
-        return m, nil
+		return m, nil
 
-    //toggle on and insiate sortByCoverage (default = Asc)
-    case "s":
-        m.toggleSort()
-        m.Update(m.profilesLoaded)
-        return m, nil
+	case "s":
+		m.toggleSort()
+		return m.updateListItems()
 
-    case "!":
-        m.toggleSortOrder()
-        m.Update(m.profilesLoaded)
-        return m, nil
+	case "!":
+		m.toggleSortOrder()
+		return m.updateListItems()
 
 	case "?":
 		m.toggleHelp()
@@ -296,35 +292,68 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 	return nil, nil
 }
 
-func (m *Model) toggleSortOrder() {
-    switch m.sortState.Order {
-    case ASC:
-        m.sortState.Order = DSC
-    case DSC:
-        m.sortState.Order = ASC
-    }
+func (m *Model) updateListItems() (tea.Model, tea.Cmd) {
+
+	m.processSort()
+
+	m.items = make([]list.Item, len(m.loadedProfiles))
+
+	for i, p := range m.loadedProfiles {
+		p.FileName = strings.TrimPrefix(p.FileName, m.detectedPackageName+"/")
+		m.items[i] = &coverProfile{
+			profile:    p,
+			percentage: percentCovered(p),
+		}
+	}
+
+	return m, m.list.SetItems(m.items)
 }
 
-func (m *Model) sortByPercentage(profiles []*cover.Profile) {
-    sort.Slice(profiles, func(i, j int) bool {
-        if m.sortState.Order == ASC {
-            return percentCovered(profiles[i]) > percentCovered(profiles[j])
-        } else {
-            return percentCovered(profiles[i]) < percentCovered(profiles[j]) 
-        }
-    })
+func (m *Model) processSort() {
+	switch m.sortState.Type {
+	case sortStateByPercentage:
+		m.sortByPercentage()
+	case sortStateByName:
+		m.sortByName()
+	}
+}
+
+func (m *Model) sortByPercentage() {
+	sort.Slice(m.loadedProfiles, func(i, j int) bool {
+		if m.sortState.Order == asc {
+			return percentCovered(m.loadedProfiles[i]) > percentCovered(m.loadedProfiles[j])
+		} else {
+			return percentCovered(m.loadedProfiles[i]) < percentCovered(m.loadedProfiles[j])
+		}
+	})
+}
+
+func (m *Model) sortByName() {
+	sort.Slice(m.loadedProfiles, func(i, j int) bool {
+		if m.sortState.Order == asc {
+			return m.loadedProfiles[i].FileName < m.loadedProfiles[j].FileName
+		} else {
+			return m.loadedProfiles[i].FileName > m.loadedProfiles[j].FileName
+		}
+	})
+}
+
+func (m *Model) toggleSortOrder() {
+	switch m.sortState.Order {
+	case asc:
+		m.sortState.Order = dsc
+	case dsc:
+		m.sortState.Order = asc
+	}
 }
 
 func (m *Model) toggleSort() {
 	switch m.sortState.Type {
-	case sortStateByName :
+	case sortStateByName:
 		m.sortState.Type = sortStateByPercentage
-        // sort all profiles by name
 
 	case sortStateByPercentage:
-        m.sortState.Type = sortStateByName
-        // sort all profiles by Ascend percent if isAscend is true
-        // else sort by Descend
+		m.sortState.Type = sortStateByName
 	}
 }
 
@@ -392,7 +421,7 @@ func (m *Model) loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 
 			finalProfiles = append(finalProfiles, p)
 		}
-        m.profilesLoaded = finalProfiles
+		m.loadedProfiles = finalProfiles
 
 		return finalProfiles
 	}
