@@ -165,7 +165,7 @@ func testHappyFlow(t *testing.T, prefix string, requestedFiles []string, filtere
 	})
 
 	t.Run("toggle sort", func(t *testing.T) {
-		t.Run("name", func(t *testing.T) {
+		t.Run("percentage", func(t *testing.T) {
 			mm, cmd := mt.sendLetterKey('s')
 			require.NotNil(t, mm)
 			require.Nil(t, cmd)
@@ -173,7 +173,7 @@ func testHappyFlow(t *testing.T, prefix string, requestedFiles []string, filtere
 			g.Assert(t, "happy_flow_toggle_sort_percentage", []byte(mm.View()))
 		})
 
-		t.Run("percentage", func(t *testing.T) {
+		t.Run("name", func(t *testing.T) {
 			mm, cmd := mt.sendLetterKey('s')
 			require.NotNil(t, mm)
 			require.Nil(t, cmd)
