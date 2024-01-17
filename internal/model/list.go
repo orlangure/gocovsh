@@ -30,9 +30,9 @@ func (f *coverProfile) FilterValue() string { return f.profile.FileName }
 
 type coverProfileDelegate struct{}
 
-func (d coverProfileDelegate) Height() int                               { return 1 }
-func (d coverProfileDelegate) Spacing() int                              { return 0 }
-func (d coverProfileDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d coverProfileDelegate) Height() int                             { return 1 }
+func (d coverProfileDelegate) Spacing() int                            { return 0 }
+func (d coverProfileDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 func (d coverProfileDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	profile, ok := listItem.(*coverProfile)
 	if !ok {

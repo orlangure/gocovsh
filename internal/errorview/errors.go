@@ -28,7 +28,7 @@ type ErrorView interface {
 }
 
 // New creates a new error view.
-func New(err ErrorView) Model {
+func New(_ ErrorView) Model {
 	return Model{}
 }
 
