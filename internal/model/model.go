@@ -78,6 +78,8 @@ type Model struct {
 	detectedPackageName string
 	requestedFiles      map[string]bool
 	filteredLinesByFile map[string][]int
+    profilesLoaded      []*cover.Profile
+    sortByAsc           bool
 
 	activeView viewName
 	helpState  helpState
@@ -188,7 +190,12 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 
 	if m.sortByCoverage {
 		sort.Slice(profiles, func(i, j int) bool {
-			return percentCovered(profiles[i]) < percentCovered(profiles[j])
+            if m.sortByAsc {
+                return percentCovered(profiles[i]) > percentCovered(profiles[j])
+            } else {
+                return percentCovered(profiles[i]) < percentCovered(profiles[j]) 
+            }
+
 		})
 	}
 
@@ -254,7 +261,20 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 			return m, loadFile(adjustedFileName, item.profile)
 		}
 
-		return m, nil
+        return m, nil
+
+    //toggle on and inisiate sortByCoverage (default = Asc)
+    case "[":
+        m.sortByCoverage = true
+        m.sortByAsc = !m.sortByAsc
+        m.Update(m.profilesLoaded)
+        return m, nil
+
+    case "]":
+        m.sortByCoverage = false
+        m.sortByAsc = false
+        m.Update(m.profilesLoaded)
+        return m, nil
 
 	case "?":
 		m.toggleHelp()
@@ -328,6 +348,7 @@ func (m *Model) loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 
 			finalProfiles = append(finalProfiles, p)
 		}
+        m.profilesLoaded = finalProfiles
 
 		return finalProfiles
 	}
