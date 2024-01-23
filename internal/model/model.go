@@ -40,11 +40,31 @@ const (
 	helpStateFull
 )
 
+type sortType int
+
+const (
+	sortStateByName sortType = iota
+	sortStateByPercentage
+)
+
+type sortOrder bool
+
+const (
+	asc sortOrder = true
+	dsc sortOrder = false
+)
+
+type SortState struct {
+	Type  sortType
+	Order sortOrder
+}
+
 // New create a new model that can be used directly in the tea framework.
 func New(opts ...Option) *Model {
 	m := &Model{
 		activeView: activeViewList,
 		helpState:  helpStateShort,
+		sortState:  SortState{Type: sortStateByName, Order: asc},
 		codeRoot:   ".",
 		list:       list.New([]list.Item{}, coverProfileDelegate{}, 0, 0),
 	}
@@ -74,13 +94,14 @@ type Model struct {
 
 	codeRoot            string
 	profileFilename     string
-	sortByCoverage      bool
 	detectedPackageName string
 	requestedFiles      map[string]bool
 	filteredLinesByFile map[string][]int
+	loadedProfiles      []*cover.Profile
 
 	activeView viewName
 	helpState  helpState
+	sortState  SortState
 	ready      bool
 
 	err errorview.Model
@@ -186,10 +207,8 @@ func (m *Model) onProfilesLoaded(profiles []*cover.Profile) (tea.Model, tea.Cmd)
 		return m.onError(errNoProfiles{})
 	}
 
-	if m.sortByCoverage {
-		sort.Slice(profiles, func(i, j int) bool {
-			return percentCovered(profiles[i]) < percentCovered(profiles[j])
-		})
+	if m.sortState.Type == sortStateByPercentage {
+		m.sortByPercentage()
 	}
 
 	m.items = make([]list.Item, len(profiles))
@@ -256,12 +275,85 @@ func (m *Model) onKeyPressed(key string) (tea.Model, tea.Cmd) {
 
 		return m, nil
 
+	case "s":
+		m.toggleSort()
+		return m.updateListItems()
+
+	case "!":
+		m.toggleSortOrder()
+		return m.updateListItems()
+
 	case "?":
 		m.toggleHelp()
 		return m, nil
 	}
 
 	return nil, nil
+}
+
+func (m *Model) updateListItems() (tea.Model, tea.Cmd) {
+
+	m.processSort()
+
+	m.items = make([]list.Item, len(m.loadedProfiles))
+
+	for i, p := range m.loadedProfiles {
+		p.FileName = strings.TrimPrefix(p.FileName, m.detectedPackageName+"/")
+		m.items[i] = &coverProfile{
+			profile:    p,
+			percentage: percentCovered(p),
+		}
+	}
+
+	return m, m.list.SetItems(m.items)
+}
+
+func (m *Model) processSort() {
+	switch m.sortState.Type {
+	case sortStateByPercentage:
+		m.sortByPercentage()
+	case sortStateByName:
+		m.sortByName()
+	}
+}
+
+func (m *Model) sortByPercentage() {
+	sort.Slice(m.loadedProfiles, func(i, j int) bool {
+		if m.sortState.Order == asc {
+			return percentCovered(m.loadedProfiles[i]) > percentCovered(m.loadedProfiles[j])
+		} else {
+			return percentCovered(m.loadedProfiles[i]) < percentCovered(m.loadedProfiles[j])
+		}
+	})
+}
+
+func (m *Model) sortByName() {
+	sort.Slice(m.loadedProfiles, func(i, j int) bool {
+		if m.sortState.Order == asc {
+			return m.loadedProfiles[i].FileName < m.loadedProfiles[j].FileName
+		} else {
+			return m.loadedProfiles[i].FileName > m.loadedProfiles[j].FileName
+		}
+	})
+}
+
+func (m *Model) toggleSortOrder() {
+	switch m.sortState.Order {
+	case asc:
+		m.sortState.Order = dsc
+	case dsc:
+		m.sortState.Order = asc
+	}
+}
+
+func (m *Model) toggleSort() {
+	switch m.sortState.Type {
+	case sortStateByName:
+		m.sortState.Type = sortStateByPercentage
+
+	case sortStateByPercentage:
+		m.sortState.Type = sortStateByName
+	}
 }
 
 func (m *Model) toggleHelp() {
@@ -328,6 +420,7 @@ func (m *Model) loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 
 			finalProfiles = append(finalProfiles, p)
 		}
+		m.loadedProfiles = finalProfiles
 
 		return finalProfiles
 	}

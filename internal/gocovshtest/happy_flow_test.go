@@ -163,4 +163,37 @@ func testHappyFlow(t *testing.T, prefix string, requestedFiles []string, filtere
 			g.Assert(t, "happy_flow_toggle_help_short", []byte(mm.View()))
 		})
 	})
+
+	t.Run("toggle sort", func(t *testing.T) {
+		t.Run("percentage", func(t *testing.T) {
+			mm, cmd := mt.sendLetterKey('s')
+			require.NotNil(t, mm)
+			require.Nil(t, cmd)
+
+			g.Assert(t, "happy_flow_toggle_sort_percentage", []byte(mm.View()))
+		})
+
+		t.Run("name", func(t *testing.T) {
+			mm, cmd := mt.sendLetterKey('s')
+			require.NotNil(t, mm)
+			require.Nil(t, cmd)
+
+			g.Assert(t, "happy_flow_toggle_sort_name", []byte(mm.View()))
+		})
+
+		t.Run("dsc", func(t *testing.T) {
+			mm, cmd := mt.sendLetterKey('!')
+			require.NotNil(t, mm)
+			require.Nil(t, cmd)
+
+			g.Assert(t, "happy_flow_toggle_sort_dsc", []byte(mm.View()))
+		})
+		t.Run("asc", func(t *testing.T) {
+			mm, cmd := mt.sendLetterKey('!')
+			require.NotNil(t, mm)
+			require.Nil(t, cmd)
+
+			g.Assert(t, "happy_flow_toggle_sort_asc", []byte(mm.View()))
+		})
+	})
 }
