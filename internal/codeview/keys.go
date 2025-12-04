@@ -46,6 +46,6 @@ var DefaultKeyMap = KeyMap{
 	),
 	HalfScreenUp: key.NewBinding(
 		key.WithKeys("u"),
-		key.WithHelp("u", "half screen down"),
+		key.WithHelp("u", "half screen up"),
 	),
 }
