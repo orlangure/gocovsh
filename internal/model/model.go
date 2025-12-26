@@ -297,7 +297,11 @@ func (m *Model) toggleHelp() {
 func (m *Model) loadProfiles(codeRoot, profileFilename string) tea.Cmd {
 	return func() tea.Msg {
 		gomodFile := path.Join(codeRoot, "go.mod")
+
 		profilesFile := path.Join(codeRoot, profileFilename)
+		if strings.HasPrefix(profileFilename, "/") {
+			profilesFile = profileFilename
+		}
 
 		pkg, err := determinePackageName(gomodFile)
 		if err != nil {
